@@ -221,6 +221,9 @@ html.ventana-abierta main, html.ventana-abierta .abajo{visibility:hidden}
 #formulario{flex:1;display:flex;min-width:0;position:relative;background:var(--papel);border:2px solid var(--linea);border-radius:16px;overflow:hidden}
 #formulario:focus-within{border-color:var(--naranja)}
 body.escribiendo #resultados, body.escribiendo #pararVoz{display:none !important}
+/* N-51: en las demas pantallas (no en la principal), al poner el dedo en "¿Que buscas?" lo de detras
+   se funde (0,14 s, como al cambiar de pantalla) en vez de desaparecer de golpe. */
+body.apagando #resultados, body.apagando #pararVoz{opacity:0;transition:opacity .14s ease-in;pointer-events:none}
 #entrada{flex:1;min-width:0;border:0;background:transparent;color:var(--tinta);font:inherit;font-size:19px;padding:14px 12px;outline:none}
 #entrada::placeholder{color:var(--suave);font-size:17px}
 /* Mientras el iPhone todavia esta dictando (antes de corregirlo), se
@@ -3172,11 +3175,53 @@ function activarCampoEntrada(campo) {
   };
   campo.addEventListener("touchstart", alPonerElDedo, { passive: true });
   campo.addEventListener("pointerdown", alPonerElDedo);
+  // N-51: en las demas pantallas, lo de detras primero se funde (0,14 s) y despues se quita, como en
+  // la principal se empieza nada mas poner el dedo. Si al final no se abre el teclado (solo has rozado
+  // el cuadro, o el dedo se mueve para desplazar la lista), vuelve a aparecer con fundido.
+  let apagadoDesde = 0, tApagar = null, tRoce = null, dedoY = null;
+  const apagar = () => {
+    if (document.body.classList.contains("apagando")) return;
+    apagadoDesde = Date.now(); document.body.classList.add("apagando");
+  };
+  const reencender = () => {
+    clearTimeout(tApagar); tApagar = null; clearTimeout(tRoce); tRoce = null;
+    if (!document.body.classList.contains("apagando")) return;
+    document.body.classList.remove("apagando");
+    if (document.body.classList.contains("escribiendo")) return;
+    const r = $("resultados"), v = $("pararVoz");
+    r.classList.remove("fundido"); void r.offsetWidth; r.classList.add("fundido");
+    v.style.animation = "none"; void v.offsetWidth; v.style.animation = "";
+  };
+  const hayPantallaDetras = () => !document.querySelector(".bienvenida") && !document.body.classList.contains("escribiendo") && $("resultados").offsetHeight > 0;
+  const dedoEnCuadro = e => {
+    if (document.activeElement === campo || !hayPantallaDetras()) return;
+    if (e.touches && e.touches[0]) dedoY = e.touches[0].clientY;
+    apagar();
+    clearTimeout(tRoce);
+    tRoce = setTimeout(() => { if (document.activeElement !== campo && !document.body.classList.contains("escribiendo")) reencender(); }, 900);
+  };
+  campo.addEventListener("touchstart", dedoEnCuadro, { passive: true });
+  campo.addEventListener("pointerdown", dedoEnCuadro);
+  campo.addEventListener("touchmove", e => {
+    if (dedoY === null || document.activeElement === campo || !e.touches || !e.touches[0]) return;
+    if (Math.abs(e.touches[0].clientY - dedoY) > 10) { dedoY = null; reencender(); }
+  }, { passive: true });
+  const esconderYa = () => { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); };
   const esconderPantalla = () => {
     if (document.querySelector(".bienvenida")) return;      // en la principal ya se hace
-    if (!document.body.classList.contains("escribiendo")) { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); }
+    if (document.body.classList.contains("escribiendo")) return;
+    dedoY = null; clearTimeout(tRoce); tRoce = null;
+    if ($("resultados").offsetHeight === 0) { esconderYa(); return; }   // no se ve nada: al momento, como antes
+    apagar();
+    const falta = 150 - (Date.now() - apagadoDesde);
+    if (falta <= 0) { esconderYa(); return; }
+    clearTimeout(tApagar);
+    tApagar = setTimeout(() => {
+      tApagar = null;
+      if (document.activeElement === campo) esconderYa(); else reencender();
+    }, falta);
   };
-  const mostrarPantalla = () => document.body.classList.remove("escribiendo");
+  const mostrarPantalla = () => { clearTimeout(tApagar); tApagar = null; document.body.classList.remove("escribiendo"); document.body.classList.remove("apagando"); };
   campo.addEventListener("focus", esconderPantalla);
   campo.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== campo) mostrarPantalla(); }, 400));
   campo.addEventListener("focus", () => {
