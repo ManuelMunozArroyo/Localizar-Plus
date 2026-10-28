@@ -221,9 +221,6 @@ html.ventana-abierta main, html.ventana-abierta .abajo{visibility:hidden}
 #formulario{flex:1;display:flex;min-width:0;position:relative;background:var(--papel);border:2px solid var(--linea);border-radius:16px;overflow:hidden}
 #formulario:focus-within{border-color:var(--naranja)}
 body.escribiendo #resultados, body.escribiendo #pararVoz{display:none !important}
-/* N-51: en las demas pantallas (no en la principal), al poner el dedo en "¿Que buscas?" lo de detras
-   se funde (0,14 s, como al cambiar de pantalla) en vez de desaparecer de golpe. */
-body.apagando #resultados, body.apagando #pararVoz{opacity:0;transition:opacity .14s ease-in;pointer-events:none}
 #entrada{flex:1;min-width:0;border:0;background:transparent;color:var(--tinta);font:inherit;font-size:19px;padding:14px 12px;outline:none}
 #entrada::placeholder{color:var(--suave);font-size:17px}
 /* Mientras el iPhone todavia esta dictando (antes de corregirlo), se
@@ -3175,53 +3172,35 @@ function activarCampoEntrada(campo) {
   };
   campo.addEventListener("touchstart", alPonerElDedo, { passive: true });
   campo.addEventListener("pointerdown", alPonerElDedo);
-  // N-51: en las demas pantallas, lo de detras primero se funde (0,14 s) y despues se quita, como en
-  // la principal se empieza nada mas poner el dedo. Si al final no se abre el teclado (solo has rozado
-  // el cuadro, o el dedo se mueve para desplazar la lista), vuelve a aparecer con fundido.
-  let apagadoDesde = 0, tApagar = null, tRoce = null, dedoY = null;
-  const apagar = () => {
-    if (document.body.classList.contains("apagando")) return;
-    apagadoDesde = Date.now(); document.body.classList.add("apagando");
-  };
-  const reencender = () => {
-    clearTimeout(tApagar); tApagar = null; clearTimeout(tRoce); tRoce = null;
-    if (!document.body.classList.contains("apagando")) return;
-    document.body.classList.remove("apagando");
-    if (document.body.classList.contains("escribiendo")) return;
-    const r = $("resultados"), v = $("pararVoz");
-    r.classList.remove("fundido"); void r.offsetWidth; r.classList.add("fundido");
-    v.style.animation = "none"; void v.offsetWidth; v.style.animation = "";
-  };
-  const hayPantallaDetras = () => !document.querySelector(".bienvenida") && !document.body.classList.contains("escribiendo") && $("resultados").offsetHeight > 0;
-  const dedoEnCuadro = e => {
-    if (document.activeElement === campo || !hayPantallaDetras()) return;
-    if (e.touches && e.touches[0]) dedoY = e.touches[0].clientY;
-    apagar();
-    clearTimeout(tRoce);
-    tRoce = setTimeout(() => { if (document.activeElement !== campo && !document.body.classList.contains("escribiendo")) reencender(); }, 900);
-  };
-  campo.addEventListener("touchstart", dedoEnCuadro, { passive: true });
-  campo.addEventListener("pointerdown", dedoEnCuadro);
-  campo.addEventListener("touchmove", e => {
-    if (dedoY === null || document.activeElement === campo || !e.touches || !e.touches[0]) return;
-    if (Math.abs(e.touches[0].clientY - dedoY) > 10) { dedoY = null; reencender(); }
-  }, { passive: true });
-  const esconderYa = () => { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); };
   const esconderPantalla = () => {
     if (document.querySelector(".bienvenida")) return;      // en la principal ya se hace
-    if (document.body.classList.contains("escribiendo")) return;
-    dedoY = null; clearTimeout(tRoce); tRoce = null;
-    if ($("resultados").offsetHeight === 0) { esconderYa(); return; }   // no se ve nada: al momento, como antes
-    apagar();
-    const falta = 150 - (Date.now() - apagadoDesde);
-    if (falta <= 0) { esconderYa(); return; }
-    clearTimeout(tApagar);
-    tApagar = setTimeout(() => {
-      tApagar = null;
-      if (document.activeElement === campo) esconderYa(); else reencender();
-    }, falta);
+    if (!document.body.classList.contains("escribiendo")) { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); }
   };
-  const mostrarPantalla = () => { clearTimeout(tApagar); tApagar = null; document.body.classList.remove("escribiendo"); document.body.classList.remove("apagando"); };
+  const mostrarPantalla = () => document.body.classList.remove("escribiendo");
+  // N-54: en las demas pantallas, como en la principal, la pantalla de detras se quita ANTES de que
+  // el iPhone suba el teclado (antes se quitaba en el "focus", con el teclado ya subiendo, y se veia
+  // cerrarse mientras subia). Se quita al LEVANTAR el dedo y solo si ha sido un toque: justo despues
+  // el iPhone pone el foco y sube el teclado. Si el dedo se mueve (pasas por encima del cuadro o
+  // desplazas la lista) no se quita nada, ni un instante.
+  let dedoX = null, dedoY = null, dedoMovido = false;
+  campo.addEventListener("touchstart", e => {
+    const t = e.touches && e.touches[0];
+    dedoMovido = !t || e.touches.length > 1;
+    dedoX = t ? t.clientX : null; dedoY = t ? t.clientY : null;
+  }, { passive: true });
+  campo.addEventListener("touchmove", e => {
+    const t = e.touches && e.touches[0];
+    if (!t || dedoY === null || Math.abs(t.clientY - dedoY) > 10 || Math.abs(t.clientX - dedoX) > 10) dedoMovido = true;
+  }, { passive: true });
+  campo.addEventListener("touchcancel", () => { dedoMovido = true; }, { passive: true });
+  campo.addEventListener("touchend", () => {
+    const toque = !dedoMovido && dedoY !== null; dedoX = dedoY = null; dedoMovido = false;
+    if (!toque || document.activeElement === campo) return;
+    if ($("resultados").offsetHeight === 0) return;           // no se ve nada detras
+    esconderPantalla();                                        // (en la principal no hace nada: alli ya esta hecho)
+    // si al final el iPhone no abre el teclado, la pantalla vuelve como estaba
+    setTimeout(() => { if (document.activeElement !== campo) mostrarPantalla(); }, 900);
+  }, { passive: true });
   campo.addEventListener("focus", esconderPantalla);
   campo.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== campo) mostrarPantalla(); }, 400));
   campo.addEventListener("focus", () => {
