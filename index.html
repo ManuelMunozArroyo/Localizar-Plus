@@ -3177,29 +3177,68 @@ function activarCampoEntrada(campo) {
     if (!document.body.classList.contains("escribiendo")) { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); }
   };
   const mostrarPantalla = () => document.body.classList.remove("escribiendo");
-  // N-54: en las demas pantallas, como en la principal, la pantalla de detras se quita ANTES de que
-  // el iPhone suba el teclado (antes se quitaba en el "focus", con el teclado ya subiendo, y se veia
-  // cerrarse mientras subia). Se quita al LEVANTAR el dedo y solo si ha sido un toque: justo despues
-  // el iPhone pone el foco y sube el teclado. Si el dedo se mueve (pasas por encima del cuadro o
-  // desplazas la lista) no se quita nada, ni un instante.
-  let dedoX = null, dedoY = null, dedoMovido = false;
+  // N-55: en las demas pantallas, como en la principal, la pantalla de detras se quita ANTES de que
+  // el iPhone suba el teclado (que sube nada mas levantar el dedo). Se quita cuando el dedo lleva
+  // 0,06 s quieto sobre el cuadro (un toque normal dura mas), o al levantarlo si el toque es mas
+  // rapido. Si el dedo se mueve (pasas por encima del cuadro o desplazas la lista) no se quita nada;
+  // si ya se habia quitado (apoyas el dedo y luego deslizas), vuelve al momento y en el mismo punto.
+  // "quieto": el dedo no se ha movido mas de 5 px (para quitarla antes de levantarlo); "toque": no se
+  // ha movido mas de 10 px en todo el toque (para quitarla al levantarlo, como siempre).
+  let dedoX = null, dedoY = null, dedoMovido = false, dedoQuieto = false, tQuieto = null, quitadaPorDedo = false, yAntes = 0, focos = 0;
+  campo.addEventListener("focus", () => { focos++; });
+  const quitarPorDedo = () => {
+    if (dedoMovido || document.activeElement === campo || document.body.classList.contains("escribiendo")) return;
+    if (document.querySelector(".bienvenida") || $("resultados").offsetHeight === 0) return;   // principal o nada detras
+    yAntes = scrollY; quitadaPorDedo = true;
+    esconderPantalla();
+    // si al final el iPhone no abre el teclado (solo has rozado el cuadro), la pantalla vuelve como
+    // estaba, como en la principal: se mira a los 0,9 s y, si el dedo sigue puesto, cuando lo levantes
+    const desde = Date.now(), focosAntes = focos;
+    const vigilar = () => {
+      if (focos !== focosAntes || !document.body.classList.contains("escribiendo")) return;   // se abrio el teclado: lo de siempre
+      if (dedoY !== null && Date.now() - desde < 5000) { setTimeout(vigilar, 300); return; }
+      mostrarPantalla(); window.scrollTo(0, yAntes);
+    };
+    setTimeout(vigilar, 900);
+  };
+  const devolverPorDedo = () => {
+    if (!quitadaPorDedo) return;
+    quitadaPorDedo = false;
+    if (document.activeElement === campo || !document.body.classList.contains("escribiendo")) return;
+    mostrarPantalla(); window.scrollTo(0, yAntes);
+  };
+  const dedoSeMueve = () => {
+    dedoMovido = true; dedoQuieto = false; tQuieto = null;
+    devolverPorDedo();
+  };
   campo.addEventListener("touchstart", e => {
     const t = e.touches && e.touches[0];
-    dedoMovido = !t || e.touches.length > 1;
-    dedoX = t ? t.clientX : null; dedoY = t ? t.clientY : null;
+    tQuieto = null;
+    if (!t || e.touches.length > 1) { dedoSeMueve(); dedoX = dedoY = null; return; }
+    dedoMovido = false; dedoQuieto = true; dedoX = t.clientX; dedoY = t.clientY;
+    // se mira en cada fotograma (con un temporizador normal el iPhone podia tardar mas en avisar)
+    const inicio = performance.now(), este = tQuieto = {};
+    const mirar = () => {
+      if (tQuieto !== este) return;
+      if (performance.now() - inicio < 60) { requestAnimationFrame(mirar); return; }
+      tQuieto = null; if (dedoQuieto) quitarPorDedo();
+    };
+    requestAnimationFrame(mirar);
   }, { passive: true });
   campo.addEventListener("touchmove", e => {
     const t = e.touches && e.touches[0];
-    if (!t || dedoY === null || Math.abs(t.clientY - dedoY) > 10 || Math.abs(t.clientX - dedoX) > 10) dedoMovido = true;
+    if (dedoMovido || dedoY === null) return;
+    if (!t || e.touches.length > 1 || Math.abs(t.clientY - dedoY) > 10 || Math.abs(t.clientX - dedoX) > 10) { dedoSeMueve(); return; }
+    if (dedoQuieto && (Math.abs(t.clientY - dedoY) > 5 || Math.abs(t.clientX - dedoX) > 5)) {
+      dedoQuieto = false; tQuieto = null;
+      devolverPorDedo();                                         // se esta empezando a mover
+    }
   }, { passive: true });
-  campo.addEventListener("touchcancel", () => { dedoMovido = true; }, { passive: true });
+  campo.addEventListener("touchcancel", dedoSeMueve, { passive: true });
   campo.addEventListener("touchend", () => {
-    const toque = !dedoMovido && dedoY !== null; dedoX = dedoY = null; dedoMovido = false;
-    if (!toque || document.activeElement === campo) return;
-    if ($("resultados").offsetHeight === 0) return;           // no se ve nada detras
-    esconderPantalla();                                        // (en la principal no hace nada: alli ya esta hecho)
-    // si al final el iPhone no abre el teclado, la pantalla vuelve como estaba
-    setTimeout(() => { if (document.activeElement !== campo) mostrarPantalla(); }, 900);
+    tQuieto = null;
+    if (dedoY !== null) quitarPorDedo();                       // toque mas rapido que 0,06 s: se quita ahora
+    dedoX = dedoY = null; quitadaPorDedo = false;
   }, { passive: true });
   campo.addEventListener("focus", esconderPantalla);
   campo.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== campo) mostrarPantalla(); }, 400));

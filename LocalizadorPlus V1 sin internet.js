@@ -4,7 +4,7 @@
 // aunque no haya internet ni funcione la pagina. Si hay internet, baja en segundo
 // plano la version nueva y se ve la siguiente vez que se abre la app.
 // REGLA: en cada entrega nueva del iPhone, cambiar VERSION (por ejemplo "N-51").
-const VERSION = "N-54";
+const VERSION = "N-55";
 const CAJA = "locplus-" + VERSION;
 const APP = new URL("index.html", self.registration.scope).href;
 const ARRANQUES = ["750x1334", "828x1792", "1125x2436", "1170x2532", "1179x2556", "1206x2622", "1284x2778", "1290x2796", "1320x2868"]
