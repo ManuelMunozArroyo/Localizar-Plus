@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Localizador Plus">
-<!-- N-58: la franja de arriba (hora, cobertura, wifi y bateria) sale de este color en TODAS las pantallas.
-     El iPhone lo lee al abrir la app y NO lo cambia despues (por eso N-57, que lo cambiaba al abrir una foto, no sirvio). -->
-<meta name="theme-color" content="#000000">
+<!-- N-59: la franja de arriba (hora, cobertura, wifi y bateria) va del azul oscuro de la cabecera en todas las
+     pantallas y NEGRA con las fotos de los cajones. Con la barra solida, el iPhone 27 la pinta del color de fondo
+     de lo que hay pegado arriba (la cabecera, o la foto cuando esta abierta): ver #franjaFoto. -->
+<meta name="theme-color" content="#1E2530">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%20750x1334.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%20828x1792.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%201125x2436.png">
@@ -116,9 +117,6 @@ header img{width:40px;height:40px;border-radius:10px;background:#fff;flex:none}
 .marca h1{white-space:nowrap}
 #estado{display:none !important}
 header{padding-top:calc(env(safe-area-inset-top) + 10px);padding-bottom:10px}
-/* N-58: por si el iPhone saca el color de la franja de arriba de la cabecera: su color de fondo es negro
-   y encima lleva una capa del azul de siempre, asi que se ve EXACTAMENTE igual. */
-header{background-color:#000;background-image:linear-gradient(var(--barra),var(--barra))}
 header img{width:44px;height:44px}
 .bienvenida h2, body.en-inicio .bienvenida h2{font-size:30px}
 .bienvenida > p.suave, body.en-inicio .bienvenida > p.suave{font-size:16.5px}
@@ -503,7 +501,21 @@ html.ventana-abierta:not(.en-falta) main, html.ventana-abierta:not(.en-falta) .a
 #instrucciones.cerrando{opacity:0;transition:opacity .25s ease-in}
 /* Fotos: se abren y se cierran con fundido, como las pantallas. Titulo: el mueble en una linea y el
    cajon debajo; el comentario debajo a todo lo ancho: la misma letra en todas las fotos. La X con su cuadrado naranja. */
-#visor.abierto{animation:aparecerVentana .22s ease-out}
+/* N-59: el fundido de la foto empieza al 12 % (antes 0 %, no se nota): con 0 el iPhone no la "veia" al abrirse */
+@keyframes aparecerFoto{from{opacity:.12}to{opacity:1}}
+#visor.abierto{animation:aparecerFoto .22s ease-out}
+/* N-59: tira negra fija, pegada arriba, DEBAJO de la foto (no tapa nada: la foto es negra y opaca). La foto
+   aparece con un fundido que empieza transparente y el iPhone, al mirar que hay arriba en ese momento, se la
+   saltaba y cogia la cabecera (azul): por eso la franja no se ponia negra. Esta tira es negra desde el primer
+   momento y no tiene fundido, asi el iPhone ve negro mientras la foto este abierta. */
+#franjaFoto{position:fixed;top:0;left:0;right:0;height:12px;background:#000;z-index:19;display:none}
+#franjaFoto.si{display:block}
+/* N-59: con la ventana del Excel (roja o azul) o las instrucciones abiertas, lo que el iPhone encuentra arriba es
+   el velo de la ventana, que es transparente: entonces cogeria el gris del fondo. Ahora el velo tiene como color
+   el azul oscuro de la cabecera, pero ese color no se pinta (se recorta a una caja de tamano cero), asi que se
+   ve exactamente igual que antes. Sin fundido (era un velo transparente: su fundido no se veia). */
+dialog#ajustes::backdrop, #instrucciones::backdrop{background-color:#1E2530;background-clip:content-box;box-sizing:border-box;padding:0 100vw 100vh 0}
+dialog#ajustes[open]::backdrop, #instrucciones[open]::backdrop{animation:none}
 #visor.saliendo{display:flex;opacity:0;transition:opacity .2s ease-in;pointer-events:none}
 .visor-cab{flex-wrap:wrap;align-items:center}
 #vTitulo{margin:4px 0 0;white-space:pre-line}
@@ -558,8 +570,9 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
   align-items:center;justify-content:center;transition:opacity .55s ease-out;will-change:opacity;
   animation:presentacionSiTarda 0s linear 5s forwards}
 #presentacion img{width:118px;height:118px;display:block}
-/* N-58: lo mismo en la pantalla de arranque: color de fondo negro con el gris de siempre encima (se ve igual). */
-#presentacion{background-color:#000;background-image:linear-gradient(#E3E5E2,#E3E5E2)}
+/* N-59: la pantalla de arranque tiene como color de fondo el azul oscuro de la cabecera, con el gris de siempre
+   encima (se ve igual): asi la franja de arriba ya sale azul oscura mientras arranca. */
+#presentacion{background-color:#1E2530;background-image:linear-gradient(#E3E5E2,#E3E5E2)}
 #presentacion.fuera{opacity:0;pointer-events:none}
 #presentacion.fuera img{opacity:0;transition:opacity .45s ease-out}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
@@ -637,6 +650,7 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
   </div>
 </dialog>
 
+<div id="franjaFoto" aria-hidden="true"></div>
 <div id="visor" role="dialog" aria-modal="true" aria-labelledby="vTitulo">
   <div class="visor-cab">
     <span style="width:44px"></span>
@@ -3498,13 +3512,19 @@ activarCampoEntrada($("entrada"));
 let fotosVisor = [], indiceVisor = 0;
 const urlFoto = f => String(f).startsWith("data:") ? f : "/_blob/" + f;
 let vozAlCerrar = "";
+// N-59: franja de arriba NEGRA con la foto abierta y del azul de la cabecera al cerrarla (ver #franjaFoto).
+// Tambien se cambia "theme-color" a la vez, por si el iPhone lo mirara.
+function franjaFoto(si) {
+  try { $("franjaFoto").classList.toggle("si", si); } catch (e) {}
+  try { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", si ? "#000000" : "#1E2530"); } catch (e) {}
+}
 function abrirFotos(lista) {
   if (!lista.length) return;
   callar();
   vozAlCerrar = "";
   fotosVisor = lista; indiceVisor = 0;
   clearTimeout(window.__tVisor); $("visor").classList.remove("saliendo");
-  $("visor").classList.add("abierto");
+  $("visor").classList.add("abierto"); franjaFoto(true);
   document.body.style.overflow = "hidden";
   pintarFoto();
   $("vCerrar").focus();
@@ -3537,7 +3557,8 @@ function cerrarFotos() {
   try { window.reiniciarZoomFoto && window.reiniciarZoomFoto(); } catch (e) {}
   const yaAbierto = $("visor").classList.contains("abierto");
   // se funde (0,2 s) en vez de desaparecer de golpe
-  if (yaAbierto) { $("visor").classList.add("saliendo"); clearTimeout(window.__tVisor); window.__tVisor = setTimeout(() => $("visor").classList.remove("saliendo"), 220); }
+  if (yaAbierto) { $("visor").classList.add("saliendo"); clearTimeout(window.__tVisor); window.__tVisor = setTimeout(() => { $("visor").classList.remove("saliendo"); franjaFoto(false); }, 220); }
+  else franjaFoto(false);
   $("visor").classList.remove("abierto"); document.body.style.overflow = ""; estado("Pregúntame otra cosa cuando quieras");
   if (yaAbierto) callar();
   // V3: al cerrar la foto se dicen los articulos que ya ves en la lista
