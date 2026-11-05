@@ -2468,7 +2468,9 @@ function conTildesParaVoz(t) {
 }
 function hablarFoto(texto) { if (vozFotosActiva) decirTexto(texto); }
 function hablar(texto) { if (vozActiva) decirTexto(texto); }
-function vozOcupada() { try { return speechSynthesis.speaking || speechSynthesis.pending; } catch (e) { return false; } }
+// N-57: la frase muda con la que se despierta la voz (despertarVoz) no cuenta como "hablando":
+// asi el primer toque no la corta nada mas empezar y el motor termina de encenderse.
+function vozOcupada() { try { if (window.__calentando && !window.__fraseEnCola) return false; return speechSynthesis.speaking || speechSynthesis.pending; } catch (e) { return false; } }
 function decirTexto(texto) {
   if (!texto || !("speechSynthesis" in window)) return;
   texto = conTildesParaVoz(texto);
@@ -2480,27 +2482,51 @@ function decirTexto(texto) {
     // antes, al tocar una zona, recibia "cortar", "cortar" y "quitar pausa" seguidas
     // aunque estuviera callado, y cada orden podia sonar como un "clac".
     if (vozOcupada()) speechSynthesis.cancel();
+    window.__fraseEnCola = false;
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-ES"; u.rate = 0.88;
-    vozElegida = vozElegida || elegirVoz();
-    if (vozElegida) u.voice = vozElegida;
     u.onstart = () => { u.__empezo = true; mostrarPararVoz(true); };
-    u.onend = () => mostrarPararVoz(false);
-    u.onerror = () => mostrarPararVoz(false);
+    u.onend = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
+    u.onerror = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
     clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa);
     window.__tVoz = setTimeout(() => {
       // La voz puede quedarse EN PAUSA (pantalla bloqueada mientras hablaba, llamada, Siri,
       // otra app...) y cortar la frase anterior no quita esa pausa (N-35). Se quita solo si
       // esta en pausa y, por si el aparato no lo dice, si al segundo y medio la frase sigue
       // esperando sin empezar.
+      // N-57: la voz se elige AHORA, justo antes de hablar: la primera vez que se abre la app
+      // el aparato tarda un poco en dar la lista de voces y la frase salia con otra voz.
+      try { vozElegida = vozElegida || elegirVoz(); if (vozElegida) u.voice = vozElegida; } catch (e) {}
       try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (e) {}
-      try { speechSynthesis.speak(u); } catch (e) {}
+      try { window.__fraseEnCola = true; speechSynthesis.speak(u); } catch (e) { window.__fraseEnCola = false; }
       window.__tVozPausa = setTimeout(() => {
         try { if (!u.__empezo && speechSynthesis.pending) speechSynthesis.resume(); } catch (e) {} }, 1500);
     }, 500);
   } catch (e) {}
 }
-const callar = () => { try { if (vozOcupada()) speechSynthesis.cancel(); } catch (e) {} clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
+const callar = () => { try { if (vozOcupada()) speechSynthesis.cancel(); } catch (e) {} window.__fraseEnCola = false; clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
+// N-57: la PRIMERA frase despues de abrir la app sonaba con un "clac" y empezaba mal: el motor de
+// voz del iPhone estaba dormido y se encendia (sonido y voz) a la vez que empezaba a hablar. Ahora,
+// con el primer toque en cualquier sitio (y otra vez al volver a la app), se le hace decir una frase
+// MUDA (volumen 0); cuando llega la frase de verdad, medio segundo despues, ya esta encendido.
+// Solo si alguna casilla de voz esta activada (si no, no se toca el sonido).
+function despertarVoz() {
+  if (window.__vozDespierta || !("speechSynthesis" in window)) return;
+  if (!(typeof vozActiva !== "undefined" && vozActiva) && !(typeof vozFotosActiva !== "undefined" && vozFotosActiva)) return;
+  window.__vozDespierta = true;
+  try {
+    vozElegida = vozElegida || elegirVoz();
+    const u = new SpeechSynthesisUtterance("a");
+    u.lang = "es-ES"; u.volume = 0;
+    if (vozElegida) u.voice = vozElegida;
+    window.__calentando = true;
+    u.onend = u.onerror = () => { window.__calentando = false; };
+    setTimeout(() => { window.__calentando = false; }, 2500);
+    speechSynthesis.speak(u);
+  } catch (e) { window.__calentando = false; }
+}
+["touchend", "pointerup", "click", "keydown"].forEach(ev => document.addEventListener(ev, despertarVoz, true));
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") window.__vozDespierta = false; });
 // Un solo boton flotante, siempre igual (verde, "Volver"): se ve
 // cuando estas viendo un resultado (una busqueda, un cajon, "todo lo
 // que hay"...), y te lleva a la pantalla principal parando la voz de
@@ -3460,13 +3486,16 @@ activarCampoEntrada($("entrada"));
 let fotosVisor = [], indiceVisor = 0;
 const urlFoto = f => String(f).startsWith("data:") ? f : "/_blob/" + f;
 let vozAlCerrar = "";
+// N-57: la franja de arriba (hora y bateria) toma el color de "theme-color": azul oscuro como la
+// cabecera (#1E2530) y NEGRO mientras se ve una foto, igual que su fondo.
+function colorBarra(c) { try { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", c); } catch (e) {} }
 function abrirFotos(lista) {
   if (!lista.length) return;
   callar();
   vozAlCerrar = "";
   fotosVisor = lista; indiceVisor = 0;
   clearTimeout(window.__tVisor); $("visor").classList.remove("saliendo");
-  $("visor").classList.add("abierto");
+  $("visor").classList.add("abierto"); colorBarra("#000000");
   document.body.style.overflow = "hidden";
   pintarFoto();
   $("vCerrar").focus();
@@ -3500,7 +3529,7 @@ function cerrarFotos() {
   const yaAbierto = $("visor").classList.contains("abierto");
   // se funde (0,2 s) en vez de desaparecer de golpe
   if (yaAbierto) { $("visor").classList.add("saliendo"); clearTimeout(window.__tVisor); window.__tVisor = setTimeout(() => $("visor").classList.remove("saliendo"), 220); }
-  $("visor").classList.remove("abierto"); document.body.style.overflow = ""; estado("Pregúntame otra cosa cuando quieras");
+  $("visor").classList.remove("abierto"); colorBarra("#1E2530"); document.body.style.overflow = ""; estado("Pregúntame otra cosa cuando quieras");
   if (yaAbierto) callar();
   // V3: al cerrar la foto se dicen los articulos que ya ves en la lista
   const t = vozAlCerrar; vozAlCerrar = "";
