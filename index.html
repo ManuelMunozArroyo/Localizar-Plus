@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Localizador Plus">
-<meta name="theme-color" content="#1E2530">
+<!-- N-58: la franja de arriba (hora, cobertura, wifi y bateria) sale de este color en TODAS las pantallas.
+     El iPhone lo lee al abrir la app y NO lo cambia despues (por eso N-57, que lo cambiaba al abrir una foto, no sirvio). -->
+<meta name="theme-color" content="#000000">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%20750x1334.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%20828x1792.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%201125x2436.png">
@@ -114,6 +116,9 @@ header img{width:40px;height:40px;border-radius:10px;background:#fff;flex:none}
 .marca h1{white-space:nowrap}
 #estado{display:none !important}
 header{padding-top:calc(env(safe-area-inset-top) + 10px);padding-bottom:10px}
+/* N-58: por si el iPhone saca el color de la franja de arriba de la cabecera: su color de fondo es negro
+   y encima lleva una capa del azul de siempre, asi que se ve EXACTAMENTE igual. */
+header{background-color:#000;background-image:linear-gradient(var(--barra),var(--barra))}
 header img{width:44px;height:44px}
 .bienvenida h2, body.en-inicio .bienvenida h2{font-size:30px}
 .bienvenida > p.suave, body.en-inicio .bienvenida > p.suave{font-size:16.5px}
@@ -553,6 +558,8 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
   align-items:center;justify-content:center;transition:opacity .55s ease-out;will-change:opacity;
   animation:presentacionSiTarda 0s linear 5s forwards}
 #presentacion img{width:118px;height:118px;display:block}
+/* N-58: lo mismo en la pantalla de arranque: color de fondo negro con el gris de siempre encima (se ve igual). */
+#presentacion{background-color:#000;background-image:linear-gradient(#E3E5E2,#E3E5E2)}
 #presentacion.fuera{opacity:0;pointer-events:none}
 #presentacion.fuera img{opacity:0;transition:opacity .45s ease-out}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
@@ -2468,35 +2475,52 @@ function conTildesParaVoz(t) {
 }
 function hablarFoto(texto) { if (vozFotosActiva) decirTexto(texto); }
 function hablar(texto) { if (vozActiva) decirTexto(texto); }
-// N-57: la frase muda con la que se despierta la voz (despertarVoz) no cuenta como "hablando":
-// asi el primer toque no la corta nada mas empezar y el motor termina de encenderse.
+// N-58: VOZ SIN "CLAC" EN TODAS LAS FRASES, no solo en la primera. El motor de voz se "duerme" al
+// terminar de hablar y, al despertarse con la frase siguiente, el sonido del iPhone hacia "clac" y la
+// frase empezaba mal. N-57 solo lo despertaba con el primer toque: por eso la primera frase iba bien y
+// las demas (navegando, "Volver", fotos...) no. Ahora CADA frase va precedida de una frase MUDA
+// ("a", volumen 0) que despierta el motor, y la frase de verdad llega medio segundo despues, con el
+// motor ya encendido: exactamente lo mismo que arreglo la primera frase en N-57.
+function calentarVoz() {
+  try {
+    vozElegida = vozElegida || elegirVoz();
+    const u = new SpeechSynthesisUtterance("a");
+    u.lang = "es-ES"; u.volume = 0;
+    if (vozElegida) u.voice = vozElegida;
+    window.__calentando = (window.__calentando || 0) + 1;
+    let hecho = false;
+    const fin = () => { if (!hecho) { hecho = true; window.__calentando = Math.max(0, (window.__calentando || 0) - 1); } };
+    u.onend = fin; u.onerror = fin; setTimeout(fin, 2500);
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+// La frase muda no cuenta como "hablando" (salvo que ya haya una frase de verdad en cola): asi un
+// toque no la corta nada mas empezar y el motor termina de encenderse.
 function vozOcupada() { try { if (window.__calentando && !window.__fraseEnCola) return false; return speechSynthesis.speaking || speechSynthesis.pending; } catch (e) { return false; } }
 function decirTexto(texto) {
   if (!texto || !("speechSynthesis" in window)) return;
   texto = conTildesParaVoz(texto);
   try {
-    // N-56: la voz empieza SIEMPRE medio segundo despues del toque (antes 0,12 s si estaba
-    // callada), para que el sonido del iPhone este ya encendido y la frase no empiece con un
-    // "clac" ni cortada. Si estaba hablando, la pausa de medio segundo sigue igual (N-08).
-    // Y solo se le da al motor de voz la orden de cortar cuando de verdad esta hablando:
-    // antes, al tocar una zona, recibia "cortar", "cortar" y "quitar pausa" seguidas
-    // aunque estuviera callado, y cada orden podia sonar como un "clac".
+    // N-56: la voz empieza SIEMPRE medio segundo despues del toque, y al motor solo se le manda
+    // cortar si de verdad esta hablando (antes recibia "cortar, cortar, quitar pausa" seguidas).
     if (vozOcupada()) speechSynthesis.cancel();
     window.__fraseEnCola = false;
+    calentarVoz();
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-ES"; u.rate = 0.88;
     u.onstart = () => { u.__empezo = true; mostrarPararVoz(true); };
     u.onend = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
     u.onerror = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
     clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa);
+    window.__vozEsperando = true;
     window.__tVoz = setTimeout(() => {
+      window.__vozEsperando = false;
+      // N-57: la voz se elige AHORA, justo antes de hablar (la lista de voces llega tarde).
+      try { vozElegida = vozElegida || elegirVoz(); if (vozElegida) u.voice = vozElegida; } catch (e) {}
       // La voz puede quedarse EN PAUSA (pantalla bloqueada mientras hablaba, llamada, Siri,
       // otra app...) y cortar la frase anterior no quita esa pausa (N-35). Se quita solo si
       // esta en pausa y, por si el aparato no lo dice, si al segundo y medio la frase sigue
       // esperando sin empezar.
-      // N-57: la voz se elige AHORA, justo antes de hablar: la primera vez que se abre la app
-      // el aparato tarda un poco en dar la lista de voces y la frase salia con otra voz.
-      try { vozElegida = vozElegida || elegirVoz(); if (vozElegida) u.voice = vozElegida; } catch (e) {}
       try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (e) {}
       try { window.__fraseEnCola = true; speechSynthesis.speak(u); } catch (e) { window.__fraseEnCola = false; }
       window.__tVozPausa = setTimeout(() => {
@@ -2504,26 +2528,14 @@ function decirTexto(texto) {
     }, 500);
   } catch (e) {}
 }
-const callar = () => { try { if (vozOcupada()) speechSynthesis.cancel(); } catch (e) {} window.__fraseEnCola = false; clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
-// N-57: la PRIMERA frase despues de abrir la app sonaba con un "clac" y empezaba mal: el motor de
-// voz del iPhone estaba dormido y se encendia (sonido y voz) a la vez que empezaba a hablar. Ahora,
-// con el primer toque en cualquier sitio (y otra vez al volver a la app), se le hace decir una frase
-// MUDA (volumen 0); cuando llega la frase de verdad, medio segundo despues, ya esta encendido.
-// Solo si alguna casilla de voz esta activada (si no, no se toca el sonido).
+const callar = () => { try { if (vozOcupada()) speechSynthesis.cancel(); } catch (e) {} window.__fraseEnCola = false; window.__vozEsperando = false; clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
+// N-57: tambien se despierta con el primer toque en cualquier sitio (y otra vez al volver a la app),
+// solo si alguna casilla de voz esta activada (si no, no se toca el sonido).
 function despertarVoz() {
   if (window.__vozDespierta || !("speechSynthesis" in window)) return;
   if (!(typeof vozActiva !== "undefined" && vozActiva) && !(typeof vozFotosActiva !== "undefined" && vozFotosActiva)) return;
   window.__vozDespierta = true;
-  try {
-    vozElegida = vozElegida || elegirVoz();
-    const u = new SpeechSynthesisUtterance("a");
-    u.lang = "es-ES"; u.volume = 0;
-    if (vozElegida) u.voice = vozElegida;
-    window.__calentando = true;
-    u.onend = u.onerror = () => { window.__calentando = false; };
-    setTimeout(() => { window.__calentando = false; }, 2500);
-    speechSynthesis.speak(u);
-  } catch (e) { window.__calentando = false; }
+  calentarVoz();
 }
 ["touchend", "pointerup", "click", "keydown"].forEach(ev => document.addEventListener(ev, despertarVoz, true));
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") window.__vozDespierta = false; });
@@ -3486,16 +3498,13 @@ activarCampoEntrada($("entrada"));
 let fotosVisor = [], indiceVisor = 0;
 const urlFoto = f => String(f).startsWith("data:") ? f : "/_blob/" + f;
 let vozAlCerrar = "";
-// N-57: la franja de arriba (hora y bateria) toma el color de "theme-color": azul oscuro como la
-// cabecera (#1E2530) y NEGRO mientras se ve una foto, igual que su fondo.
-function colorBarra(c) { try { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", c); } catch (e) {} }
 function abrirFotos(lista) {
   if (!lista.length) return;
   callar();
   vozAlCerrar = "";
   fotosVisor = lista; indiceVisor = 0;
   clearTimeout(window.__tVisor); $("visor").classList.remove("saliendo");
-  $("visor").classList.add("abierto"); colorBarra("#000000");
+  $("visor").classList.add("abierto");
   document.body.style.overflow = "hidden";
   pintarFoto();
   $("vCerrar").focus();
@@ -3529,7 +3538,7 @@ function cerrarFotos() {
   const yaAbierto = $("visor").classList.contains("abierto");
   // se funde (0,2 s) en vez de desaparecer de golpe
   if (yaAbierto) { $("visor").classList.add("saliendo"); clearTimeout(window.__tVisor); window.__tVisor = setTimeout(() => $("visor").classList.remove("saliendo"), 220); }
-  $("visor").classList.remove("abierto"); colorBarra("#1E2530"); document.body.style.overflow = ""; estado("Pregúntame otra cosa cuando quieras");
+  $("visor").classList.remove("abierto"); document.body.style.overflow = ""; estado("Pregúntame otra cosa cuando quieras");
   if (yaAbierto) callar();
   // V3: al cerrar la foto se dicen los articulos que ya ves en la lista
   const t = vozAlCerrar; vozAlCerrar = "";
