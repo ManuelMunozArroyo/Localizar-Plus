@@ -42,7 +42,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-07-3";
+(function () { const ENTREGA = "2026-11-07-4";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -588,6 +588,7 @@ html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{--
 /* 07/11/2026: la PRIMERA vez (pantalla roja "Falta tu Excel" nada mas abrir) el fondo ya entra en su color
    definitivo, sin fundido: antes se veia pasar de claro a oscuro justo al terminar el arranque. */
 html.sin-fundido-fondo, html.sin-fundido-fondo body{transition:none !important}
+html.sin-fundido-fondo *, html.sin-fundido-fondo *::before, html.sin-fundido-fondo *::after{transition:none !important;animation:none !important}
 #presentacion.fuera{opacity:0;pointer-events:none}
 #presentacion.fuera img{opacity:0;transition:opacity .45s ease-out}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
@@ -3818,13 +3819,20 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
     // fotogramas) y un pelin mas; luego se funde. Al terminar el fundido
     // se quita la presentacion y el fondo pasa a gris.
     requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => {
-      // 07/11/2026: si al abrir ya esta la ventana (pantalla roja "Falta tu Excel"), el fondo entra
-      // directamente en su color, sin fundido, para que no se vea ningun cambio de color.
+      // 07/11/2026 (parpadeo al abrir): el fondo entra SIEMPRE directamente en su color, sin fundido,
+      // mientras el icono aun tapa la pantalla. Antes, al quitarse el icono, se veia pasar el fondo de
+      // claro a gris oscuro en 0,3 s (se notaba sobre todo la primera vez, con la pantalla roja).
       const h = document.documentElement;
-      if (h.classList.contains("ventana-abierta")) {
-        h.classList.add("sin-fundido-fondo");
-        setTimeout(() => h.classList.remove("sin-fundido-fondo"), 900);
+      h.classList.add("sin-fundido-fondo");
+      // Si falta el Excel, en cuanto se vaya el icono se abrira la ventana roja y el fondo pasaria de claro
+      // a gris a la vista: ese era el parpadeo. Se deja ya puesto el gris AHORA, con el icono aun delante.
+      if (document.body.classList.contains("en-falta")) {
+        h.style.setProperty("--capa", "#6C6E6F"); document.body.style.setProperty("--capa", "#6C6E6F");
       }
+      setTimeout(() => {
+        h.classList.remove("sin-fundido-fondo");
+        h.style.removeProperty("--capa"); document.body.style.removeProperty("--capa");
+      }, 1200);
       pres.classList.add("fuera");
       let fin = false;
       const acabar = () => { if (fin) return; fin = true; pres.remove(); blanco(); };
