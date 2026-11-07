@@ -42,7 +42,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-07-1";
+(function () { const ENTREGA = "2026-11-07-2";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -483,11 +483,7 @@ dialog#ajustes[data-modo="falta"] .fila-volver{visibility:hidden}
 #instrucciones .col{flex:0 0 calc(var(--fs)*3.5);height:calc(var(--fs)*2.3);font-size:var(--fs)}
 #instrucciones .dlg h2{font-size:min(22px,calc(var(--fs)*1.7))}
 html, body{transition:background-color .3s ease}
-html.sin-fundido-color, html.sin-fundido-color body{transition:none !important}
 html.ventana-abierta, html.ventana-abierta body{background:#6C6E6F !important}
-/* 07/11/2026: con la ventana abierta, el gris va en la PAGINA (lo que se ve abajo) y arriba sigue el azul oscuro */
-html.ventana-abierta:not(.arranque){background:#6C6E6F !important}
-html.ventana-abierta:not(.arranque) body{background-color:#1E2530 !important;background-image:linear-gradient(#6C6E6F,#6C6E6F) !important}
 header::after{content:"";position:absolute;inset:0;background:rgba(10,12,16,.55);opacity:0;pointer-events:none;transition:opacity .3s ease}
 html.ventana-abierta header::after{opacity:1}
 html.ventana-abierta header::after{opacity:0}
@@ -586,12 +582,8 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    asi la pantalla se ve exactamente igual. Al arrancar (html.arranque) no se toca: gris claro hasta arriba.
    Con una foto abierta (html.foto-abierta) el color de fondo es negro: negro hasta arriba. */
 @property --capa{syntax:"<color>";inherits:false;initial-value:#E3E5E2}
-html:not(.arranque), html:not(.arranque) body{--capa:var(--fondo);transition:background-color .3s ease, --capa .3s ease}
-/* 07/11/2026 (arriba oscuro y abajo claro ANTES de que se vea la principal): el COLOR DE LA PAGINA (html) es el visible
-   (claro, o gris con la ventana abierta) y es el que se ve en la franja de abajo; el azul oscuro queda como base del body
-   (con la capa clara encima), que es de donde el iPhone saca el color de la franja de arriba. */
-html:not(.arranque){background-color:var(--capa) !important;background-image:none !important}
-html:not(.arranque) body{background-color:#1E2530 !important;background-image:linear-gradient(var(--capa),var(--capa)) !important}
+html:not(.arranque), html:not(.arranque) body{background-color:#1E2530 !important;--capa:var(--fondo);
+  background-image:linear-gradient(var(--capa),var(--capa)) !important;transition:background-color .3s ease, --capa .3s ease}
 html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{--capa:#6C6E6F}
 #presentacion.fuera{opacity:0;pointer-events:none}
 #presentacion.fuera img{opacity:0;transition:opacity .45s ease-out}
@@ -2548,7 +2540,7 @@ function decirTexto(texto) {
     // anterior ya ha terminado y no queda a medias (sin "clac").
     u.onboundary = e => {
       u.__fronteras = (u.__fronteras || 0) + 1;
-      if (window.__cortando && window.__fraseActual === u && (!e || !e.name || e.name === "word") && (e && e.charIndex > 0)) cortarYa();
+      if (window.__cortando && window.__fraseActual === u && (!e || !e.name || e.name === "word") && (!e || e.charIndex === undefined || e.charIndex > 0)) cortarYa();
     };
     u.onerror = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
     clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa);
@@ -2574,7 +2566,15 @@ function decirTexto(texto) {
 // avisa de las palabras, o tarda, se corta igual a los 0,45 s como mucho. Despues del corte, la frase muda (N-60).
 function cortarYa() {
   window.__cortando = false; clearTimeout(window.__tCorte);
-  try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); calentarVoz(); } } catch (e) {}
+  try {
+    if (speechSynthesis.speaking || speechSynthesis.pending) {
+      // 07/11/2026 (voz al cortar): si hay que cortar en seco porque no ha dado tiempo a terminar la palabra,
+      // primero se baja el volumen de la frase y se para un instante; asi el corte NO se oye como un "clac".
+      try { const u = window.__fraseActual; if (u) u.volume = 0; } catch (e) {}
+      try { speechSynthesis.pause(); } catch (e) {}
+      setTimeout(() => { try { speechSynthesis.cancel(); } catch (e) {} try { speechSynthesis.resume(); } catch (e) {} calentarVoz(); }, 60);
+    }
+  } catch (e) {}
 }
 function cortarSuave() {
   const u = window.__fraseActual;
@@ -2583,7 +2583,7 @@ function cortarSuave() {
   if (u && hablando && u.__empezo && !u.__acabada && u.__fronteras) {
     if (window.__cortando) return;
     window.__cortando = true;
-    clearTimeout(window.__tCorte); window.__tCorte = setTimeout(cortarYa, 450);
+    clearTimeout(window.__tCorte); window.__tCorte = setTimeout(cortarYa, 1200);
   } else cortarYa();
 }
 const callar = () => { try { if (vozOcupada()) cortarSuave(); } catch (e) {} window.__fraseEnCola = false; window.__vozEsperando = false; clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
@@ -3809,21 +3809,11 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
     // fotogramas) y un pelin mas; luego se funde. Al terminar el fundido
     // se quita la presentacion y el fondo pasa a gris.
     requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => {
-      // 07/11/2026: los colores definitivos (arriba oscuro, abajo claro) se ponen con el icono TODAVIA
-      // delante y tapandolo todo, sin fundido de color, y se espera a que la pantalla este repintada.
-      // Solo entonces se funde el icono: al ver la principal ya esta todo del color definitivo.
-      const h = document.documentElement;
-      h.classList.add("sin-fundido-color");
-      h.classList.remove("arranque");
-      void getComputedStyle(h).backgroundColor; void getComputedStyle(document.body).backgroundColor;
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => {
-        h.classList.remove("sin-fundido-color");
-        pres.classList.add("fuera");
-        let fin = false;
-        const acabar = () => { if (fin) return; fin = true; pres.remove(); blanco(); };
-        pres.addEventListener("transitionend", e => { if (e.target === pres) acabar(); });
-        setTimeout(acabar, 800);
-      }, 250)));
+      pres.classList.add("fuera");
+      let fin = false;
+      const acabar = () => { if (fin) return; fin = true; pres.remove(); blanco(); };
+      pres.addEventListener("transitionend", e => { if (e.target === pres) acabar(); });
+      setTimeout(acabar, 800);
     }, 120)));
   };
   const aparecer = () => {
@@ -3831,7 +3821,7 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
     try { ajustarLetraRecuadros(); } catch (e) {}
     requestAnimationFrame(() => document.documentElement.classList.remove("preparando"));
     // La presentacion se ve unos 2,5 segundos y se funde: a los 3 s ya se ven las ubicaciones
-    setTimeout(quitarPresentacion, Math.max(0, 2300 - 370 - (performance.now() - inicio)));
+    setTimeout(quitarPresentacion, Math.max(0, 2300 - (performance.now() - inicio)));
   };
   // Se espera a la hoja de la letra y a los dos tipos que usa la app
   // (Archivo para los titulos y Atkinson para el texto). Como mucho, 0,9 s.
