@@ -311,7 +311,7 @@ html.grande #verTodoAjustes{padding-left:6px;padding-right:6px}
 #progreso{margin:8px 0 0;min-height:1.3em;color:var(--suave);font-size:16px}
 
 /* Visor de fotos */
-#visor{position:fixed;inset:0;background:#000;color:#fff;z-index:20;display:none;flex-direction:column;
+#visor{position:fixed;inset:0;background:#1E2530;color:#fff;z-index:20;display:none;flex-direction:column;
   padding:calc(env(safe-area-inset-top) + 8px) 12px calc(env(safe-area-inset-bottom) + 10px)}
 #visor.abierto{display:flex}
 .visor-cab{display:flex;align-items:flex-start;gap:10px;position:relative;z-index:2}
@@ -326,7 +326,9 @@ html, body, button, #visor{touch-action:manipulation}
 #vFoto{flex:1;min-height:0;display:block;position:relative;padding:0}
 #vFoto img{position:absolute;left:0;top:10px;max-width:none;max-height:none;border-radius:6px}
 /* N-49: la foto ampliada va en su propia capa y el hueco es negro: al moverla rapido Safari ya no deja rayas */
-#vFoto{background:#000}
+#vFoto{background:#1E2530}
+/* N-61: el fondo de las fotos es el AZUL OSCURO de la cabecera (#1E2530), no negro: el iPhone pinta la zona de la
+   hora de ese azul y no lo cambia al abrir la foto; asi toda la pantalla de la foto es del mismo color hasta arriba. */
 #vFoto img{will-change:transform;-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .visor-pie{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#BDBDBD;font-size:15px}
 .visor-pie button{background:#2A2A2A;border:0;color:#fff;border-radius:12px;width:56px;height:48px;font-size:26px;cursor:pointer}
@@ -511,7 +513,7 @@ html.ventana-abierta:not(.en-falta) main, html.ventana-abierta:not(.en-falta) .a
    aparece con un fundido que empieza transparente y el iPhone, al mirar que hay arriba en ese momento, se la
    saltaba y cogia la cabecera (azul): por eso la franja no se ponia negra. Esta tira es negra desde el primer
    momento y no tiene fundido, asi el iPhone ve negro mientras la foto este abierta. */
-#franjaFoto{position:fixed;top:0;left:0;right:0;height:12px;background:#000;z-index:19;display:none}
+#franjaFoto{position:fixed;top:0;left:0;right:0;height:12px;background:#1E2530;z-index:19;display:none}
 #franjaFoto.si{display:block}
 /* N-59: con la ventana del Excel (roja o azul) o las instrucciones abiertas, lo que el iPhone encuentra arriba es
    el velo de la ventana, que es transparente: entonces cogeria el gris del fondo. Ahora el velo tiene como color
@@ -583,7 +585,6 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
 html:not(.arranque), html:not(.arranque) body{background-color:#1E2530 !important;--capa:var(--fondo);
   background-image:linear-gradient(var(--capa),var(--capa)) !important;transition:background-color .3s ease, --capa .3s ease}
 html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{--capa:#6C6E6F}
-html.foto-abierta:not(.arranque), html.foto-abierta:not(.arranque) body{background-color:#000 !important}
 #presentacion.fuera{opacity:0;pointer-events:none}
 #presentacion.fuera img{opacity:0;transition:opacity .45s ease-out}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
@@ -2528,13 +2529,19 @@ function decirTexto(texto) {
   try {
     // N-56: la voz empieza SIEMPRE medio segundo despues del toque, y al motor solo se le manda
     // cortar si de verdad esta hablando (antes recibia "cortar, cortar, quitar pausa" seguidas).
-    if (vozOcupada()) speechSynthesis.cancel();
+    if (vozOcupada()) cortarSuave();
     window.__fraseEnCola = false;
     calentarVoz();
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-ES"; u.rate = 0.88;
     u.onstart = () => { u.__empezo = true; mostrarPararVoz(true); };
-    u.onend = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
+    u.onend = () => { u.__acabada = true; window.__fraseEnCola = false; mostrarPararVoz(false); };
+    // N-61: el aparato avisa al EMPEZAR cada palabra; si se ha pedido cortar, se corta justo ahi: la palabra
+    // anterior ya ha terminado y no queda a medias (sin "clac").
+    u.onboundary = e => {
+      u.__fronteras = (u.__fronteras || 0) + 1;
+      if (window.__cortando && window.__fraseActual === u && (!e || !e.name || e.name === "word") && (e && e.charIndex > 0)) cortarYa();
+    };
     u.onerror = () => { window.__fraseEnCola = false; mostrarPararVoz(false); };
     clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa);
     window.__vozEsperando = true;
@@ -2547,15 +2554,31 @@ function decirTexto(texto) {
       // esta en pausa y, por si el aparato no lo dice, si al segundo y medio la frase sigue
       // esperando sin empezar.
       try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (e) {}
-      try { window.__fraseEnCola = true; speechSynthesis.speak(u); } catch (e) { window.__fraseEnCola = false; }
+      if (window.__cortando) cortarYa();      // N-61: por si la palabra anterior aun no habia terminado
+      try { window.__fraseEnCola = true; window.__fraseActual = u; speechSynthesis.speak(u); } catch (e) { window.__fraseEnCola = false; }
       window.__tVozPausa = setTimeout(() => {
         try { if (!u.__empezo && speechSynthesis.pending) speechSynthesis.resume(); } catch (e) {} }, 1500);
     }, 500);
   } catch (e) {}
 }
-// N-60: al CORTAR la voz (cerrar una foto, "Volver", pasar rapido...) el sonido se apagaba de golpe y sonaba
-// "clac". Justo despues del corte se dice la frase MUDA (volumen 0, la de N-58), asi el sonido no se apaga en seco.
-const callar = () => { try { if (vozOcupada()) { speechSynthesis.cancel(); calentarVoz(); } } catch (e) {} window.__fraseEnCola = false; window.__vozEsperando = false; clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
+// N-61: al CORTAR la voz (cambiar de pantalla, cerrar una foto, "Volver"...) ya no se corta a mitad de palabra
+// (eso era el "clac"): termina la palabra que esta diciendo y se para al empezar la siguiente. Si el aparato no
+// avisa de las palabras, o tarda, se corta igual a los 0,45 s como mucho. Despues del corte, la frase muda (N-60).
+function cortarYa() {
+  window.__cortando = false; clearTimeout(window.__tCorte);
+  try { if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); calentarVoz(); } } catch (e) {}
+}
+function cortarSuave() {
+  const u = window.__fraseActual;
+  let hablando = false;
+  try { hablando = speechSynthesis.speaking; } catch (e) {}
+  if (u && hablando && u.__empezo && !u.__acabada && u.__fronteras) {
+    if (window.__cortando) return;
+    window.__cortando = true;
+    clearTimeout(window.__tCorte); window.__tCorte = setTimeout(cortarYa, 450);
+  } else cortarYa();
+}
+const callar = () => { try { if (vozOcupada()) cortarSuave(); } catch (e) {} window.__fraseEnCola = false; window.__vozEsperando = false; clearTimeout(window.__tVoz); clearTimeout(window.__tVozPausa); mostrarPararVoz(false); };
 // N-57: tambien se despierta con el primer toque en cualquier sitio (y otra vez al volver a la app),
 // solo si alguna casilla de voz esta activada (si no, no se toca el sonido).
 function despertarVoz() {
@@ -3529,9 +3552,7 @@ let vozAlCerrar = "";
 // Tambien se cambia "theme-color" a la vez, por si el iPhone lo mirara.
 function franjaFoto(si) {
   try { $("franjaFoto").classList.toggle("si", si); } catch (e) {}
-  try { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", si ? "#000000" : "#1E2530"); } catch (e) {}
-  // N-60: con la barra transparente, el color de fondo de la pagina negro = franja negra hasta arriba
-  try { document.documentElement.classList.toggle("foto-abierta", si); } catch (e) {}
+  // N-61: la foto es azul oscuro como la barra: theme-color y color de fondo de la pagina se quedan en azul.
 }
 function abrirFotos(lista) {
   if (!lista.length) return;
