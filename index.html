@@ -42,7 +42,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-08-2";
+(function () { const ENTREGA = "2026-11-08-3";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -389,8 +389,13 @@ body:has(#pararVoz:not(.oculto)) main{padding-bottom:76px}
    justo el hueco entre la cabecera y la barra de abajo, y los recuadros se
    reparten ese espacio. No se puede desplazar con el dedo. Al pulsar
    "¿Que buscas?" se esconde, y al salir vuelve. Letra un 5% mas grande. */
-body.en-inicio{height:100%;min-height:0;overflow:hidden;overscroll-behavior:none}
-body.en-falta{height:100%;min-height:0;overflow:hidden;overscroll-behavior:none}
+/* 08/11/2026: la principal y la roja miden la PANTALLA ENTERA (100dvh), no el hueco interior.
+   Antes se quedaban un poco mas cortas que las demas pantallas: la barra de abajo (boton amarillo y
+   buscador) quedaba mas alta que en el resto y debajo asomaba el fondo. Con esto las barras quedan
+   a la misma altura en todas las pantallas y no asoma nada. */
+body.en-inicio{height:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+body.en-falta{height:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+html:has(body.en-inicio), html:has(body.en-falta){height:100%;height:100dvh}
 html:has(body.en-falta){overflow:hidden;overscroll-behavior:none}
 body.en-falta main{display:flex;flex-direction:column;min-height:0;padding-bottom:12px}
 body.en-falta #resultados{flex:1;display:flex;flex-direction:column;min-height:0}
