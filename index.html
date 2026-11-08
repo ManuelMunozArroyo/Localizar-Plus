@@ -42,7 +42,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-07-4";
+(function () { const ENTREGA = "2026-11-08-1";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -490,6 +490,10 @@ html.ventana-abierta header::after{opacity:0}
 @keyframes aparecerVentana{from{opacity:0}to{opacity:1}}
 @keyframes aparecerFondo{from{opacity:0}to{opacity:1}}
 dialog#ajustes[open]{animation:aparecerVentana .3s ease-out}
+/* 07/11/2026: ventana abierta pero invisible mientras el icono de arranque esta delante (sin parpadeo) */
+dialog#ajustes.esperando-arranque, dialog#ajustes.esperando-arranque::backdrop{opacity:0 !important;animation:none !important;transition:none !important}
+/* y al hacerse visible aparece ENTERA de golpe, sin fundido: el fundido lo hace el icono al irse */
+dialog#ajustes.sin-animacion, dialog#ajustes.sin-animacion::backdrop{animation:none !important;transition:none !important;opacity:1 !important}
 dialog#ajustes.cerrando{opacity:0;transition:opacity .25s ease-in}
 dialog#ajustes.cerrando::backdrop{opacity:0;transition:opacity .25s ease-in}
 dialog#ajustes .dlg.cambio{animation:aparecerVentana .4s ease-out}
@@ -588,7 +592,6 @@ html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{--
 /* 07/11/2026: la PRIMERA vez (pantalla roja "Falta tu Excel" nada mas abrir) el fondo ya entra en su color
    definitivo, sin fundido: antes se veia pasar de claro a oscuro justo al terminar el arranque. */
 html.sin-fundido-fondo, html.sin-fundido-fondo body{transition:none !important}
-html.sin-fundido-fondo *, html.sin-fundido-fondo *::before, html.sin-fundido-fondo *::after{transition:none !important;animation:none !important}
 #presentacion.fuera{opacity:0;pointer-events:none}
 #presentacion.fuera img{opacity:0;transition:opacity .45s ease-out}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
@@ -2685,8 +2688,11 @@ function filaSitio(clave, derecha) {
 }
 function mostrarVentanaFalta() {
   const d = $("ajustes"); if (!document.body.classList.contains("en-falta")) return;
+  // 07/11/2026 (parpadeo al abrir): la ventana roja se prepara y se abre YA, con el icono todavia delante,
+  // pero invisible (clase "esperando-arranque"); se hace visible, sin animacion, en el mismo momento en que
+  // el icono empieza a irse. Asi no hay ni pantalla vacia ni ventana que "aparezca" despues.
   const pres = document.getElementById("presentacion");
-  if (pres && !pres.classList.contains("fuera")) { setTimeout(mostrarVentanaFalta, 100); return; }
+  const conIcono = !!(pres && !pres.classList.contains("fuera"));
   d.dataset.modo = "falta";
   // las casillas quedan en el MISMO sitio que en "Tu Excel" (debajo del hueco de "Ver todo")
   { const amarillo = $("verTodoAjustes"), zoom = d.querySelector(".dlg > .interruptor-zoom"), fo = d.querySelector(".dlg > .interruptor-fotos"), voz = d.querySelector(".dlg > .interruptor-voz");
@@ -2697,6 +2703,7 @@ function mostrarVentanaFalta() {
     el("span", { class: "renglon-info" }, "carga el Excel:"),
     el("span", { class: "renglon-info nombre-excel" }, "“ARTÍCULOS LOCALIZADOR PLUS”"));
   const cargar = $("cargar"); cargar.classList.remove("naranja", "azulclaro"); cargar.classList.add("rojo");
+  if (conIcono) d.classList.add("esperando-arranque");
   if (!d.open) { d.showModal(); try { document.activeElement && document.activeElement.blur(); } catch (e) {} }
   const recolocar = () => { try { ajustarTextoExcel(); } catch (e) {} colocarVentanaExcel(); dispatchEvent(new Event("resize")); };
   requestAnimationFrame(recolocar); setTimeout(recolocar, 300); setTimeout(recolocar, 1200);
@@ -3829,10 +3836,12 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       if (document.body.classList.contains("en-falta")) {
         h.style.setProperty("--capa", "#6C6E6F"); document.body.style.setProperty("--capa", "#6C6E6F");
       }
-      setTimeout(() => {
-        h.classList.remove("sin-fundido-fondo");
-        h.style.removeProperty("--capa"); document.body.style.removeProperty("--capa");
-      }, 1200);
+      // se quita en cuanto el color ya esta pintado (no por tiempo): asi no reinicia nada
+      requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
+      setTimeout(() => { h.style.removeProperty("--capa"); document.body.style.removeProperty("--capa"); }, 1200);
+      try { const dd = document.getElementById("ajustes");
+        if (dd) { dd.classList.add("sin-animacion"); dd.classList.remove("esperando-arranque");
+          dd.addEventListener("close", () => dd.classList.remove("sin-animacion"), { once: true }); } } catch (e) {}
       pres.classList.add("fuera");
       let fin = false;
       const acabar = () => { if (fin) return; fin = true; pres.remove(); blanco(); };
