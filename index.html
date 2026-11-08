@@ -42,7 +42,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-08-1";
+(function () { const ENTREGA = "2026-11-08-2";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -575,9 +575,13 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    el mismo gris (#E3E5E2). Al fundirse solo aparece el contenido; el fondo
    no cambia nunca. La app va siempre en modo claro para que ese gris sea
    siempre el mismo. */
-#presentacion{position:fixed;inset:0;z-index:1000;background:#E3E5E2;display:flex;
+#presentacion{position:fixed;z-index:1000;background:#E3E5E2;display:flex;
   align-items:center;justify-content:center;transition:opacity .55s ease-out;will-change:opacity;
-  animation:presentacionSiTarda 0s linear 5s forwards}
+  animation:presentacionSiTarda 0s linear 5s forwards;
+  /* 08/11/2026 (el icono no se mueve): la pantalla de arranque ocupa EXACTAMENTE la pantalla entera,
+     sin zonas seguras ni margenes, igual que el fondo que pinta el icono en el primer instante; asi
+     los dos iconos caen en el mismo punto y no se ve "bajar" al entrar la app. */
+  top:0;left:0;width:100vw;height:100vh;height:100dvh;padding:0;margin:0;box-sizing:border-box}
 #presentacion img{width:118px;height:118px;display:block}
 /* N-60: la pantalla de arranque vuelve a ser gris claro hasta arriba del todo (se quita el azul de N-59). */
 /* N-60: COLOR DE LA FRANJA DE ARRIBA. Con la barra transparente, el iPhone pinta encima de la hora un degradado
@@ -3831,20 +3835,25 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       // claro a gris oscuro en 0,3 s (se notaba sobre todo la primera vez, con la pantalla roja).
       const h = document.documentElement;
       h.classList.add("sin-fundido-fondo");
+      // 08/11/2026: mientras se va el icono, las franjas siguen claras; cambian de golpe justo cuando
+      // el icono termina de irse, a la vez que aparece la pantalla, no antes ni despues.
+      h.classList.add("arranque");
       // Si falta el Excel, en cuanto se vaya el icono se abrira la ventana roja y el fondo pasaria de claro
       // a gris a la vista: ese era el parpadeo. Se deja ya puesto el gris AHORA, con el icono aun delante.
       if (document.body.classList.contains("en-falta")) {
         h.style.setProperty("--capa", "#6C6E6F"); document.body.style.setProperty("--capa", "#6C6E6F");
       }
       // se quita en cuanto el color ya esta pintado (no por tiempo): asi no reinicia nada
-      requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
       setTimeout(() => { h.style.removeProperty("--capa"); document.body.style.removeProperty("--capa"); }, 1200);
       try { const dd = document.getElementById("ajustes");
         if (dd) { dd.classList.add("sin-animacion"); dd.classList.remove("esperando-arranque");
           dd.addEventListener("close", () => dd.classList.remove("sin-animacion"), { once: true }); } } catch (e) {}
       pres.classList.add("fuera");
       let fin = false;
-      const acabar = () => { if (fin) return; fin = true; pres.remove(); blanco(); };
+      const acabar = () => { if (fin) return; fin = true;
+        // el icono se quita y las franjas toman su color definitivo EN EL MISMO FOTOGRAMA y sin fundido
+        h.classList.remove("arranque"); pres.remove(); blanco();
+        requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo"))); };
       pres.addEventListener("transitionend", e => { if (e.target === pres) acabar(); });
       setTimeout(acabar, 800);
     }, 120)));
