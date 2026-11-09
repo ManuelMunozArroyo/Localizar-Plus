@@ -42,10 +42,24 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-08-4";
+(function () { const ENTREGA = "2026-11-08-5";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
+  // 08/11/2026 (franja negra al abrir): alto REAL de la pantalla para la principal y la roja.
+  // Solo con la app instalada, en vertical y cuando lo que dice el iPhone se queda corto por poco
+  // (la zona de la rayita); con el teclado u otros casos no se toca nada.
+  if (instalada) {
+    const fijarAlto = () => { try {
+      const h = document.documentElement, alto = screen.height, ancho = screen.width;
+      const vertical = innerHeight >= innerWidth && Math.abs(innerWidth - ancho) <= 1;
+      if (vertical && alto >= innerHeight && alto - innerHeight <= 120) {
+        h.style.setProperty("--alto-pantalla", alto + "px"); h.classList.add("alto-fijo");
+      } else { h.classList.remove("alto-fijo"); h.style.removeProperty("--alto-pantalla"); }
+    } catch (e) {} };
+    fijarAlto();
+    addEventListener("resize", fijarAlto); addEventListener("orientationchange", fijarAlto);
+  }
   if (window.SOLO_VISTA) {
     document.documentElement.classList.add("solo-vista");
     const parar = e => { if (e.cancelable) e.preventDefault(); e.stopImmediatePropagation(); };
@@ -393,12 +407,16 @@ body:has(#pararVoz:not(.oculto)) main{padding-bottom:76px}
    Antes se quedaban un poco mas cortas que las demas pantallas: la barra de abajo (boton amarillo y
    buscador) quedaba mas alta que en el resto y debajo asomaba el fondo. Con esto las barras quedan
    a la misma altura en todas las pantallas y no asoma nada. */
-/* 08/11/2026 (primera apertura): el BODY ya no lleva overflow:hidden. Con el, la barra de abajo
-   (position:sticky) se colocaba respecto al body y no respecto a la pantalla; al reabrir la app seguida,
-   el iPhone corrige la altura justo despues de abrir y la barra se quedaba en el sitio viejo (franja
-   negra debajo) hasta navegar. El bloqueo para que no se deslice se mantiene en el html y en el gesto. */
-body.en-inicio{height:100%;height:100dvh;min-height:0;overscroll-behavior:none}
-body.en-falta{height:100%;height:100dvh;min-height:0;overscroll-behavior:none}
+body.en-inicio{height:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+body.en-falta{height:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-behavior:none}
+/* 08/11/2026 (FRANJA NEGRA AL ABRIR, causa real): al abrir la app desde el icono, el iPhone (iOS 27, iPhone 12
+   con zoom de pantalla) le dice a la pagina que la pantalla mide 655 pt en vez de 693 (le falta la zona de
+   la rayita de abajo) y no lo corrige hasta que la pagina se desplaza (por eso se arreglaba al navegar).
+   La principal y la roja median "el alto que dice el iPhone" y debajo quedaba el fondo azul oscuro.
+   Ahora, con la app instalada y en vertical, miden el ALTO REAL DE LA PANTALLA (screen.height), que el
+   iPhone da bien desde el primer instante: la barra de abajo llega al borde y no queda franja. */
+html.alto-fijo:has(body.en-inicio), html.alto-fijo:has(body.en-falta),
+html.alto-fijo body.en-inicio, html.alto-fijo body.en-falta{height:var(--alto-pantalla) !important}
 html:has(body.en-inicio), html:has(body.en-falta){height:100%;height:100dvh}
 html:has(body.en-falta){overflow:hidden;overscroll-behavior:none}
 body.en-falta main{display:flex;flex-direction:column;min-height:0;padding-bottom:12px}
