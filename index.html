@@ -43,7 +43,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-09-4";
+(function () { const ENTREGA = "2026-11-09-5";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -651,8 +651,13 @@ html.alto-fijo #presentacion{height:var(--alto-pantalla) !important}
    asi la pantalla se ve exactamente igual. Al arrancar (html.arranque) no se toca: gris claro hasta arriba.
    Con una foto abierta (html.foto-abierta) el color de fondo es negro: negro hasta arriba. */
 @property --capa{syntax:"<color>";inherits:false;initial-value:#E3E5E2}
-html:not(.arranque), html:not(.arranque) body{background-color:#1E2530 !important;--capa:var(--fondo);
-  background-image:linear-gradient(var(--capa),var(--capa)) !important;transition:background-color .3s ease, --capa .3s ease}
+html:not(.arranque), html:not(.arranque) body{--capa:var(--fondo);transition:background-color .3s ease, --capa .3s ease}
+/* 09/11/2026 (destello oscuro abajo al arrancar): el COLOR DE FONDO DE LA PAGINA (html) queda CLARO siempre.
+   El iPhone (y Safari) pintan con ese color las zonas de los bordes; al estar en azul oscuro, en el instante en
+   que entraba la app se veia un destello negro abajo. El azul oscuro queda solo como base del body (con la capa
+   clara encima), para la zona de la hora. Con ventana abierta, el gris va en la pagina (regla de ventana-abierta). */
+html:not(.arranque){background-color:var(--capa) !important;background-image:none !important}
+html:not(.arranque) body{background-color:#1E2530 !important;background-image:linear-gradient(var(--capa),var(--capa)) !important}
 html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{--capa:#6C6E6F}
 /* 07/11/2026: la PRIMERA vez (pantalla roja "Falta tu Excel" nada mas abrir) el fondo ya entra en su color
    definitivo, sin fundido: antes se veia pasar de claro a oscuro justo al terminar el arranque. */
