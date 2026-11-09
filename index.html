@@ -43,10 +43,25 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-08-6";
+(function () { const ENTREGA = "2026-11-09-4";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
+  // 09/11/2026 (icono centrado en cualquier iPhone y con el movil girado): con la app instalada, el icono va en
+  // el CENTRO DE LA PANTALLA REAL (screen), que el iPhone da bien desde el primer instante y no cambia al abrir
+  // (al contrario que el alto de la pagina). En vertical se usa el lado largo; girado, el corto.
+  // Sin instalar (Safari) va centrado en la pagina (50%).
+  const ponerIcono = () => { try {
+    const h = document.documentElement;
+    if (!instalada) { h.style.backgroundPosition = "50% 50%"; h.style.removeProperty("--icono-top"); return; }
+    const largo = Math.max(screen.width, screen.height), corto = Math.min(screen.width, screen.height);
+    const alto = innerWidth > innerHeight ? corto : largo;
+    const arriba = Math.round((alto / 2 - 59) * 2) / 2;
+    h.style.setProperty("--icono-top", arriba + "px");
+    h.style.backgroundPosition = "50% " + arriba + "px";
+  } catch (e) {} };
+  ponerIcono();
+  addEventListener("orientationchange", () => requestAnimationFrame(ponerIcono));
   // 08/11/2026 (franja negra al abrir): alto REAL de la pantalla para la principal y la roja.
   // Solo con la app instalada, en vertical y cuando lo que dice el iPhone se queda corto por poco
   // (la zona de la rayita); con el teclado u otros casos no se toca nada.
@@ -63,8 +78,6 @@
   }
   if (window.SOLO_VISTA) {
     document.documentElement.classList.add("solo-vista");
-    // 08/11/2026: en Safari (sin instalar) el icono va centrado en la pagina desde el primer pintado
-    try { document.documentElement.style.backgroundPosition = "50% 50%"; } catch (e) {}
     const parar = e => { if (e.cancelable) e.preventDefault(); e.stopImmediatePropagation(); };
     ["click", "dblclick", "touchstart", "touchmove", "touchend", "pointerdown", "pointerup", "mousedown", "mouseup",
      "keydown", "keyup", "input", "change", "submit", "contextmenu", "gesturestart", "gesturechange", "gestureend", "wheel"]
@@ -420,6 +433,13 @@ body.en-falta{height:100%;height:100dvh;min-height:0;overflow:hidden;overscroll-
    iPhone da bien desde el primer instante: la barra de abajo llega al borde y no queda franja. */
 html.alto-fijo:has(body.en-inicio), html.alto-fijo:has(body.en-falta),
 html.alto-fijo body.en-inicio, html.alto-fijo body.en-falta{height:var(--alto-pantalla) !important}
+/* 09/11/2026: el mismo fallo del alto corto en el RESTO de pantallas (cajones, estanterias, buhardilla, buscar...):
+   la barra de abajo se quedaba 38 pt arriba y por debajo asomaba la lista. La barra se coloca respecto al
+   ALTO REAL de la pantalla (si no hay fallo, la diferencia es 0 y no cambia nada). Lo mismo con el boton
+   "Volver" flotante y con la foto a pantalla completa. */
+html.alto-fijo body:not(.en-inicio):not(.en-falta) .abajo{bottom:calc(100dvh - var(--alto-pantalla))}
+html.alto-fijo #pararVoz{translate:0 calc(var(--alto-pantalla) - 100dvh)}
+html.alto-fijo #visor{bottom:auto;height:var(--alto-pantalla)}
 html:has(body.en-inicio), html:has(body.en-falta){height:100%;height:100dvh}
 html:has(body.en-falta){overflow:hidden;overscroll-behavior:none}
 body.en-falta main{display:flex;flex-direction:column;min-height:0;padding-bottom:12px}
@@ -513,7 +533,9 @@ dialog#ajustes[data-modo="falta"] .fila-volver{visibility:hidden}
 #instrucciones .col{flex:0 0 calc(var(--fs)*3.5);height:calc(var(--fs)*2.3);font-size:var(--fs)}
 #instrucciones .dlg h2{font-size:min(22px,calc(var(--fs)*1.7))}
 html, body{transition:background-color .3s ease}
-html.ventana-abierta, html.ventana-abierta body{background:#6C6E6F !important}
+/* 09/11/2026: solo cuando ya NO esta el icono de arranque. Antes se aplicaba tambien con el icono delante
+   (la ventana roja se abre invisible detras, N-66) y el iPhone pintaba la franja de la hora en gris. */
+html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{background:#6C6E6F !important}
 header::after{content:"";position:absolute;inset:0;background:rgba(10,12,16,.55);opacity:0;pointer-events:none;transition:opacity .3s ease}
 html.ventana-abierta header::after{opacity:1}
 html.ventana-abierta header::after{opacity:0}
@@ -606,7 +628,7 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    no cambia nunca. La app va siempre en modo claro para que ese gris sea
    siempre el mismo. */
 #presentacion{position:fixed;z-index:1000;background:#E3E5E2;display:block;
-  animation:presentacionSiTarda 0s linear 5s forwards;
+  animation:presentacionSiTarda 0s linear 24s forwards;
   /* 08/11/2026 (el icono no se mueve): la pantalla de arranque ocupa EXACTAMENTE la pantalla entera,
      sin zonas seguras ni margenes, igual que el fondo que pinta el icono en el primer instante; asi
      los dos iconos caen en el mismo punto y no se ve "bajar" al entrar la app. */
@@ -616,7 +638,7 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    icono no se mueve aunque el iPhone corrija la altura al reabrir seguido. Es el mismo punto que usan el
    primer pintado (fondo del html) y las 9 imagenes de arranque. En un iPhone de 320 x 693 cae exactamente
    donde estaba (centrado). Sin animaciones de entrada, salida ni recolocacion. */
-#presentacion img{width:118px;height:118px;display:block;position:absolute;left:50%;margin-left:-59px;top:calc(108.28vw - 59px);transition:none !important;animation:none !important}
+#presentacion img{width:118px;height:118px;display:block;position:absolute;left:50%;margin-left:-59px;top:calc(108.28vw - 59px);top:var(--icono-top, calc(108.28vw - 59px));transition:none !important;animation:none !important}
 /* 08/11/2026: sin instalar (Safari), el icono CENTRADO en la pagina, igual que en el primer pintado */
 html.solo-vista #presentacion img{top:calc(50% - 59px)}
 /* 08/11/2026: con el fallo del iPhone al abrir (alto corto), la pantalla del icono tapa la PANTALLA ENTERA
@@ -2417,7 +2439,7 @@ function abrirBDCopia() {
     pet.onupgradeneeded = () => { if (!pet.result.objectStoreNames.contains(COPIA_ALMACEN)) pet.result.createObjectStore(COPIA_ALMACEN); };
     pet.onsuccess = () => ok(pet.result);
     pet.onerror = () => mal(pet.error);
-  }), 4000);
+  }), 15000);   // 09/11/2026: antes 4 s; si el iPhone tardaba mas, la app creia que no habia Excel (pantalla roja)
 }
 async function guardarCopia(sitios, info) {
   const copia = { sitios, info };
@@ -2446,7 +2468,7 @@ async function leerCopia() {
       const c = await conTiempo(new Promise((ok, mal) => {
         const t = bd.transaction(COPIA_ALMACEN, "readonly"), pet = t.objectStore(COPIA_ALMACEN).get("copia");
         pet.onsuccess = () => ok(pet.result); pet.onerror = () => mal(pet.error);
-      }), 6000);
+      }), 15000);   // 09/11/2026: antes 6 s
       if (valida(c)) return c;
     } finally { bd.close(); }
   } catch (e) {}
@@ -3851,7 +3873,7 @@ window.addEventListener("pageshow", evitarTecladoAlAbrir);
 // que no se vea, la pantalla espera a tener la letra buena (como mucho un
 // momento) y aparece ya colocada.
 // Pase lo que pase, a los 4 segundos se ve la app
-setTimeout(() => { document.documentElement.classList.remove("arrancando", "arranque"); document.documentElement.style.background = ""; }, 6000);
+setTimeout(() => { document.documentElement.classList.remove("arrancando", "arranque"); document.documentElement.style.background = ""; }, 24000);   // 09/11/2026: antes 6 s
 (function aparecerSinSaltos() {
   let hecho = false;
   const inicio = 0;   // desde que tocas el icono
@@ -3893,8 +3915,23 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
     if (hecho) return; hecho = true;
     try { ajustarLetraRecuadros(); } catch (e) {}
     requestAnimationFrame(() => document.documentElement.classList.remove("preparando"));
-    // La presentacion se ve unos 2,5 segundos y se funde: a los 3 s ya se ven las ubicaciones
-    setTimeout(quitarPresentacion, Math.max(0, 2300 - (performance.now() - inicio)));
+    // La presentacion se ve unos 2,5 segundos como minimo. 09/11/2026: y ADEMAS no se va hasta que la
+    // pantalla de detras esta completa (datos leidos y pintados, o ventana roja preparada, letras listas)
+    // y lleva 3 fotogramas sin cambiar nada. Prima que este bien sobre la rapidez. Tope de seguridad: 20 s.
+    const cuandoListo = (hacer) => {
+      const t0 = performance.now(); let antes = "", iguales = 0;
+      const mirar = () => {
+        const h = document.documentElement, b = document.body, ab = document.querySelector(".abajo"), d = document.getElementById("ajustes");
+        const listo = window.__datosDecididos === true && !h.classList.contains("preparando") && b &&
+          (b.classList.contains("en-inicio") || (d && d.open));
+        const firma = [innerWidth, innerHeight, b ? b.className : "", ab ? Math.round(ab.getBoundingClientRect().bottom) : 0,
+          document.querySelectorAll("#resultados *").length, d && d.open ? 1 : 0].join("|");
+        iguales = (listo && firma === antes) ? iguales + 1 : 0; antes = firma;
+        if ((listo && iguales >= 3) || performance.now() - t0 > 20000) hacer(); else requestAnimationFrame(mirar);
+      };
+      requestAnimationFrame(mirar);
+    };
+    setTimeout(() => cuandoListo(quitarPresentacion), Math.max(0, 2300 - (performance.now() - inicio)));
   };
   // Se espera a la hoja de la letra y a los dos tipos que usa la app
   // (Archivo para los titulos y Atkinson para el texto). Como mucho, 0,9 s.
@@ -3931,10 +3968,12 @@ function sitiosDeMuestra() {
   return s;
 }
 (async function arrancar() {
-  if (window.SOLO_VISTA) { usarDatos(sitiosDeMuestra(), null); return; }
+  if (window.SOLO_VISTA) { usarDatos(sitiosDeMuestra(), null); window.__datosDecididos = true; return; }
   const copia = await leerCopia();
   if (copia) usarDatos(copia.sitios, copia.info);
   else { pintarVacio(); estado("Buscando tus datos…"); }
+  // 09/11/2026: ya se sabe que pantalla va detras del icono (principal con datos, o ventana roja)
+  window.__datosDecididos = true;
 
   const usar = window.claude && typeof window.claude.use === "function" ? n => window.claude.use(n) : () => Promise.resolve(null);
   usar("assets").then(a => { ASSETS = a; }).catch(() => {});
