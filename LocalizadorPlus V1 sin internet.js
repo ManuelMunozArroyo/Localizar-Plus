@@ -1,13 +1,13 @@
 // Localizador Plus V1 · iPhone: funciona sin internet (N-50).
 // La primera vez que se abre con internet guarda en el iPhone la app (index.html),
-// las 9 pantallas de arranque y las letras. Despues se abre desde lo guardado,
+// las 10 pantallas de arranque y las letras. Despues se abre desde lo guardado,
 // aunque no haya internet ni funcione la pagina. Si hay internet, baja en segundo
 // plano la version nueva y se ve la siguiente vez que se abre la app.
 // REGLA: en cada entrega nueva del iPhone, cambiar VERSION (por ejemplo "N-51").
-const VERSION = "N-71";
+const VERSION = "N-72";
 const CAJA = "locplus-" + VERSION;
 const APP = new URL("index.html", self.registration.scope).href;
-const ARRANQUES = ["750x1334", "828x1792", "1125x2436", "1170x2532", "1179x2556", "1206x2622", "1284x2778", "1290x2796", "1320x2868"]
+const ARRANQUES = ["960x2079", "750x1334", "828x1792", "1125x2436", "1170x2532", "1179x2556", "1206x2622", "1284x2778", "1290x2796", "1320x2868"]
   .map(t => new URL("LocalizadorPlus%20V1%20arranque%20" + t + ".png", self.registration.scope).href);
 const LETRAS = "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Atkinson+Hyperlegible:wght@400;700&display=swap";
 const DE_LETRAS = u => u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com";

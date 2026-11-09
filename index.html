@@ -8,7 +8,8 @@
 <!-- N-59: la franja de arriba (hora, cobertura, wifi y bateria) va del azul oscuro de la cabecera en todas las
      pantallas y NEGRA con las fotos de los cajones. Con la barra solida, el iPhone 27 la pinta del color de fondo
      de lo que hay pegado arriba (la cabecera, o la foto cuando esta abierta): ver #franjaFoto. -->
-<meta name="theme-color" content="#1E2530">
+<meta name="theme-color" content="#E3E5E2" id="colorTema">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 693px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="LocalizadorPlus V1 arranque 960x2079.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%20750x1334.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%20828x1792.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="LocalizadorPlus%20V1%20arranque%201125x2436.png">
@@ -42,7 +43,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-08-5";
+(function () { const ENTREGA = "2026-11-08-6";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -62,6 +63,8 @@
   }
   if (window.SOLO_VISTA) {
     document.documentElement.classList.add("solo-vista");
+    // 08/11/2026: en Safari (sin instalar) el icono va centrado en la pagina desde el primer pintado
+    try { document.documentElement.style.backgroundPosition = "50% 50%"; } catch (e) {}
     const parar = e => { if (e.cancelable) e.preventDefault(); e.stopImmediatePropagation(); };
     ["click", "dblclick", "touchstart", "touchmove", "touchend", "pointerdown", "pointerup", "mousedown", "mouseup",
      "keydown", "keyup", "input", "change", "submit", "contextmenu", "gesturestart", "gesturechange", "gestureend", "wheel"]
@@ -614,6 +617,11 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    primer pintado (fondo del html) y las 9 imagenes de arranque. En un iPhone de 320 x 693 cae exactamente
    donde estaba (centrado). Sin animaciones de entrada, salida ni recolocacion. */
 #presentacion img{width:118px;height:118px;display:block;position:absolute;left:50%;margin-left:-59px;top:calc(108.28vw - 59px);transition:none !important;animation:none !important}
+/* 08/11/2026: sin instalar (Safari), el icono CENTRADO en la pagina, igual que en el primer pintado */
+html.solo-vista #presentacion img{top:calc(50% - 59px)}
+/* 08/11/2026: con el fallo del iPhone al abrir (alto corto), la pantalla del icono tapa la PANTALLA ENTERA
+   desde el primer instante, igual que la principal (N-71); asi abajo no cambia nada al corregirse el alto */
+html.alto-fijo #presentacion{height:var(--alto-pantalla) !important}
 /* N-60: la pantalla de arranque vuelve a ser gris claro hasta arriba del todo (se quita el azul de N-59). */
 /* N-60: COLOR DE LA FRANJA DE ARRIBA. Con la barra transparente, el iPhone pinta encima de la hora un degradado
    del color de fondo de la pagina (html y body). Ese color de fondo es ahora el azul oscuro de la cabecera, y
@@ -3876,6 +3884,8 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       // 08/11/2026: la pantalla de arranque se quita DE UNA VEZ, sin fundido, y en ese mismo fotograma
       // las franjas de arriba y abajo toman su color definitivo: todo cambia a la vez.
       h.classList.remove("arranque"); pres.remove(); blanco();
+      // 08/11/2026: en ese mismo fotograma, el color de las barras del iPhone pasa al azul de la cabecera
+      try { const t = document.getElementById("colorTema"); if (t) t.setAttribute("content", "#1E2530"); } catch (e) {}
       requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
     }, 120)));
   };
