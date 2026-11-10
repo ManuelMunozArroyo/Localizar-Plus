@@ -43,7 +43,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-09-5";
+(function () { const ENTREGA = "2026-11-10-1";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -663,6 +663,10 @@ html.ventana-abierta:not(.arranque), html.ventana-abierta:not(.arranque) body{--
    definitivo, sin fundido: antes se veia pasar de claro a oscuro justo al terminar el arranque. */
 html.sin-fundido-fondo, html.sin-fundido-fondo body{transition:none !important}
 #presentacion.fuera{opacity:0;pointer-events:none}
+/* 09/11/2026 (se veia la barra del buscador con el icono delante): MIENTRAS ESTA EL ICONO, todo el contenido de la
+   app es INVISIBLE (sigue colocado, pero no se pinta). Asi, aunque el iPhone deje alguna zona de la pantalla sin
+   tapar al arrancar, alli solo se ve el fondo claro. Todo aparece a la vez en el fotograma en que se va el icono. */
+html.arranque body > *:not(#presentacion){visibility:hidden !important}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
 </style>
 </head>
