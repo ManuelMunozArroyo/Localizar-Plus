@@ -43,7 +43,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-11-V2-3";
+(function () { const ENTREGA = "2026-11-12-V2-6";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -564,6 +564,8 @@ main, .abajo{transition:opacity .25s ease-out}
 html.ventana-abierta:not(.en-falta) main, html.ventana-abierta:not(.en-falta) .abajo{opacity:0;transition:opacity .3s ease-out, visibility 0s linear .3s}
 #instrucciones[open]{animation:aparecerVentana .3s ease-out}
 #instrucciones.cerrando{opacity:0;transition:opacity .25s ease-in}
+/* V2-6: "Tu Excel" oculta al instante al pulsar "Inicio" en las instrucciones (sin fundido, para que no se transparente) */
+dialog#ajustes.oculta-ya, dialog#ajustes.oculta-ya::backdrop{opacity:0 !important;transition:none !important;animation:none !important}
 /* Fotos: se abren y se cierran con fundido, como las pantallas. Titulo: el mueble en una linea y el
    cajon debajo; el comentario debajo a todo lo ancho: la misma letra en todas las fotos. La X con su cuadrado naranja. */
 /* N-59: el fundido de la foto empieza al 12 % (antes 0 %, no se nota): con 0 el iPhone no la "veia" al abrirse */
@@ -4463,13 +4465,22 @@ ajustarUnaLinea();
   };
   document.getElementById("cerrarInstr").addEventListener("click", () => cerrarSuave([ventana], () => { ventana.close(); quitarFoco(); }));
   // "Inicio" (burdeos) en las instrucciones: cierra las instrucciones y "Tu Excel" a la vez y va a la pantalla principal
-  document.getElementById("inicioInstr").addEventListener("click", () => cerrarSuave(aj.dataset.modo === "falta" || !aj.open ? [ventana] : [ventana, aj], () => {
-    ventana.close(); quitarFoco();
-    if (aj.dataset.modo === "falta") return;   // sin Excel cargado no hay pantalla principal: se queda en "Falta tu Excel"
-    if (aj.open) aj.close();
-    if (!document.body.classList.contains("en-inicio") && typeof pintarBienvenida === "function") { try { pintarBienvenida(); } catch (e) {} }
-    quitarFoco();
-  }));
+  document.getElementById("inicioInstr").addEventListener("click", () => {
+    if (ventana.classList.contains("cerrando")) return;
+    // V2-6 (12/11/2026): al ir a la principal, "Tu Excel" (que sigue abierta detras) se oculta AL INSTANTE, y solo se
+    // funden las instrucciones sobre el fondo claro. Antes se fundian las dos a la vez y durante un cuarto de segundo
+    // se veia "Tu Excel" mezclada con las instrucciones.
+    const dos = !(aj.dataset.modo === "falta" || !aj.open);
+    if (dos) aj.classList.add("oculta-ya");
+    cerrarSuave([ventana], () => {
+      ventana.close(); quitarFoco();
+      if (aj.dataset.modo === "falta") return;   // sin Excel cargado no hay pantalla principal: se queda en "Falta tu Excel"
+      if (aj.open) aj.close();
+      aj.classList.remove("oculta-ya");
+      if (!document.body.classList.contains("en-inicio") && typeof pintarBienvenida === "function") { try { pintarBienvenida(); } catch (e) {} }
+      quitarFoco();
+    });
+  });
   ventana.addEventListener("close", () => { quitarFoco(); setTimeout(quitarFoco, 0); });
   // "Volver" y "Seguir" de "Tu Excel" a la MISMA altura que el "Volver" de las instrucciones
   // (que acaba 16 px por encima del borde de abajo de la ventana); la version va justo encima.
