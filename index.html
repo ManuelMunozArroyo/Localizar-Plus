@@ -44,7 +44,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-13-V2-7";
+(function () { const ENTREGA = "2026-11-14-V2-8";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -63,6 +63,11 @@
   } catch (e) {} };
   ponerIcono();
   addEventListener("orientationchange", () => requestAnimationFrame(ponerIcono));
+  // V2-8 (14/11/2026): se APUNTA el momento en que el icono empieza a verse (solo se apunta; no se toca el icono
+  // ni su fundido). Sirve para que el icono se vea siempre el mismo rato, tarde lo que tarde el iPhone en arrancar.
+  try { document.addEventListener("animationstart", e => {
+    try { if (e.animationName === "entradaIcono" && typeof window.__iconoDesde !== "number") window.__iconoDesde = performance.now(); } catch (x) {}
+  }, true); } catch (e) {}
   // 08/11/2026 (franja negra al abrir): alto REAL de la pantalla para la principal y la roja.
   // Solo con la app instalada, en vertical y cuando lo que dice el iPhone se queda corto por poco
   // (la zona de la rayita); con el teclado u otros casos no se toca nada.
@@ -3955,7 +3960,34 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       };
       requestAnimationFrame(mirar);
     };
-    setTimeout(() => cuandoListo(quitarPresentacion), Math.max(0, 2300 - (performance.now() - inicio)));
+    // V2-8 (14/11/2026): ADEMAS, el icono se ve SIEMPRE el mismo rato. Antes solo se contaban 2,3 s desde que el
+    // iPhone empezaba a cargar la app: si el iPhone tardaba en arrancar (mucho tiempo sin abrirla), esos 2,3 s se
+    // iban en blanco y el icono se veia muy poco o nada, y la pantalla principal entraba de golpe. Ahora tambien
+    // se espera a que el icono lleve 1,4 s viendose desde que EMPEZO a aparecer (window.__iconoDesde, apuntado en
+    // la cabecera). Si el iPhone arranca rapido, el icono ya lleva ese tiempo y no se espera nada: todo igual que antes.
+    // Si no se llega a saber cuando empezo (no deberia pasar), se sigue como antes y no se espera de mas.
+    const esperarIcono = (hacer) => {
+      const DURA = 1400, TOPE = 1500, t0 = performance.now();
+      let animado = null;   // solo se mira (una vez) si aun no se sabe cuando empezo el icono
+      const mirar = () => {
+        const desde = window.__iconoDesde;
+        if (typeof desde === "number") {
+          const falta = desde + DURA - performance.now();
+          if (falta > 0) setTimeout(hacer, falta); else hacer();
+          return;
+        }
+        if (animado === null) {
+          animado = false;
+          // solo se espera si el icono esta todavia por salir (fundido puesto y aun sin terminar)
+          try { const im = document.querySelector("#presentacion img"), cs = im ? getComputedStyle(im) : null;
+            animado = !!cs && String(cs.animationName || "").indexOf("entradaIcono") >= 0 && parseFloat(cs.opacity) < 1; } catch (e) {}
+        }
+        if (!animado || performance.now() - t0 > TOPE) { hacer(); return; }
+        requestAnimationFrame(mirar);
+      };
+      mirar();
+    };
+    setTimeout(() => esperarIcono(() => cuandoListo(quitarPresentacion)), Math.max(0, 2300 - (performance.now() - inicio)));
   };
   // Se espera a la hoja de la letra y a los dos tipos que usa la app
   // (Archivo para los titulos y Atkinson para el texto). Como mucho, 0,9 s.
