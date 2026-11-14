@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="es" class="preparando grande arranque" data-theme="light" style="background:#E3E5E2">
+<html lang="es" class="preparando grande arranque" data-theme="light" style="background:#FFFFFF">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Localizador Plus">
 <!-- N-59: la franja de arriba (hora, cobertura, wifi y bateria) va del azul oscuro de la cabecera en todas las
      pantallas y NEGRA con las fotos de los cajones. Con la barra solida, el iPhone 27 la pinta del color de fondo
      de lo que hay pegado arriba (la cabecera, o la foto cuando esta abierta): ver #franjaFoto. -->
-<meta name="theme-color" content="#E3E5E2" id="colorTema">
+<meta name="theme-color" content="#FFFFFF" id="colorTema">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 693px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="LocalizadorPlus V2 arranque 960x2079.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V2%20arranque%20750x1334.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="LocalizadorPlus%20V2%20arranque%20828x1792.png">
@@ -43,7 +44,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-12-V2-6";
+(function () { const ENTREGA = "2026-11-13-V2-7";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -633,7 +634,7 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    el mismo gris (#E3E5E2). Al fundirse solo aparece el contenido; el fondo
    no cambia nunca. La app va siempre en modo claro para que ese gris sea
    siempre el mismo. */
-#presentacion{position:fixed;z-index:1000;background:#E3E5E2;display:block;
+#presentacion{position:fixed;z-index:1000;background:#FFFFFF;display:block;
   animation:presentacionSiTarda 0s linear 24s forwards;
   /* 08/11/2026 (el icono no se mueve): la pantalla de arranque ocupa EXACTAMENTE la pantalla entera,
      sin zonas seguras ni margenes, igual que el fondo que pinta el icono en el primer instante; asi
@@ -644,7 +645,7 @@ html.preparando body *, html.preparando ::placeholder{-webkit-text-fill-color:tr
    icono no se mueve aunque el iPhone corrija la altura al reabrir seguido. Es el mismo punto que usan el
    primer pintado (fondo del html) y las 9 imagenes de arranque. En un iPhone de 320 x 693 cae exactamente
    donde estaba (centrado). Sin animaciones de entrada, salida ni recolocacion. */
-#presentacion img{width:118px;height:118px;display:block;position:absolute;left:50%;margin-left:-59px;top:calc(108.28vw - 59px);top:var(--icono-top, calc(108.28vw - 59px));transition:none !important;animation:entradaIcono .5s ease-out .05s both}
+#presentacion img{width:118px;height:118px;display:block;position:absolute;left:50%;margin-left:-59px;top:calc(108.28vw - 59px);top:var(--icono-top, calc(108.28vw - 59px));transition:none !important;opacity:0;animation:entradaIcono .6s ease-out .5s both}
 /* V2 (10/11/2026): el icono entra con un fundido suave. El iPhone ya no enseña el icono en su imagen de arranque
    (solo fondo claro), asi el paso del iPhone a la app no hace "apagar y encender" el icono: se ve un efecto de entrada. */
 @keyframes entradaIcono{from{opacity:0}to{opacity:1}}
@@ -676,6 +677,10 @@ html.sin-fundido-fondo, html.sin-fundido-fondo body{transition:none !important}
    app es INVISIBLE (sigue colocado, pero no se pinta). Asi, aunque el iPhone deje alguna zona de la pantalla sin
    tapar al arrancar, alli solo se ve el fondo claro. Todo aparece a la vez en el fotograma en que se va el icono. */
 html.arranque body > *:not(#presentacion){visibility:hidden !important}
+/* V2-7 (13/11/2026): el arranque es BLANCO PURO. El iPhone y Safari ensenan siempre un instante de blanco antes de
+   pintar cualquier pagina; con el arranque gris se veia gris -> blanco -> gris (parpadeo del fondo). En blanco, ese
+   paso no se ve en ningun caso (Safari, instalada con Excel, instalada sin Excel). El gris claro vuelve al entrar la app. */
+html.arranque body{background:#FFFFFF !important}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
 </style>
 </head>
@@ -3919,8 +3924,9 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       // se quita en cuanto el color ya esta pintado (no por tiempo): asi no reinicia nada
       setTimeout(() => { h.style.removeProperty("--capa"); document.body.style.removeProperty("--capa"); }, 1200);
       try { const dd = document.getElementById("ajustes");
-        if (dd) { dd.classList.add("sin-animacion"); dd.classList.remove("esperando-arranque");
-          dd.addEventListener("close", () => dd.classList.remove("sin-animacion"), { once: true }); } } catch (e) {}
+        // V2-7: ya no se deja la marca "sin-animacion" (hacia que la 1.a vez que se abria el menu entrase de golpe).
+        // Al quitar "esperando-arranque" la ventana roja entra con su fundido normal de 0,3 s, una sola vez.
+        if (dd) dd.classList.remove("esperando-arranque"); } catch (e) {}
       // 08/11/2026: la pantalla de arranque se quita DE UNA VEZ, sin fundido, y en ese mismo fotograma
       // las franjas de arriba y abajo toman su color definitivo: todo cambia a la vez.
       h.classList.remove("arranque"); pres.remove(); blanco();
