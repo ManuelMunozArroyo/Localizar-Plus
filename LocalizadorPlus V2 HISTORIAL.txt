@@ -1,0 +1,561 @@
+LOCALIZADOR PLUS - NUEVA NUMERACION (desde el 15/10/2026) - LEER PRIMERO
+=========================================================================
+La app se llama "Localizador Plus" (SIN "+"). Parte de la V21 y la numeracion vuelve a empezar: V1.
+Hubo una prueba llamada "Localizador Plus +": se descarto el "+" y no debe quedar en ningun sitio.
+
+VERSION ACTUAL: Localizador Plus V1 (iPhone y ordenador).
+- iPhone: GitHub Pages (repositorio "Localizar-Plus"; es el unico sitio donde se publica, N-52).
+- Ordenador: SUSTITUYE a la V21 en su misma carpeta (%LOCALAPPDATA%\LocalizadorPlus), mismo programa
+  (LocalizadorPlus.exe), mismo icono del Escritorio ("Localizador Plus") y mismo puerto (47622): se conserva
+  el Excel cargado. El instalador borra lo que hubiera de la prueba "+" (carpeta, programa e icono).
+  El Localizador v50 no se toca (puerto 47621).
+- No depende de Claude para funcionar (iPhone en GitHub Pages, ordenador en local; datos en cada aparato).
+
+NOMBRES (con ESPACIOS, nunca guiones ni "+"): todos los archivos y carpetas de cada entrega llevan
+"LocalizadorPlus V<n>" (ahora "LocalizadorPlus V1"):
+LocalizadorPlus V1 iPhone.zip, LocalizadorPlus V1 ordenador.zip, LocalizadorPlus V1 contexto maestro.md...
+Excepciones obligatorias: "index.html" del iPhone (GitHub Pages lo necesita asi) y lo instalado en el ordenador
+(carpeta "LocalizadorPlus" y "LocalizadorPlus.exe", sin numero, para no perder el Excel al actualizar).
+
+Cambios de la V1 respecto a la V21:
+- Version de abajo: "Localizador Plus V1 · iPhone" / "Localizador Plus V1 · Ordenador". Cabecera, titulo y
+  nombre bajo el icono: "Localizador Plus" (con "Plus" en naranja en la cabecera), igual que en la V21.
+- Ninguna foto se abre sola: al buscar un articulo o pedir varios cajones sale el texto con "Ver la foto".
+- Sin el boton "Ver las N fotos seguidas".
+- La voz se calla al pulsar "Ver la foto" y al cerrar la foto con la X.
+- Resultados SIEMPRE con tarjetas (tambien con un solo articulo y con los parecidos).
+- "Volver" desde los resultados (boton "Ver todo lo que hay aqui") vuelve a los resultados, en el mismo
+  punto; el siguiente "Volver" va a la principal.
+- "Ver todo" (pantalla 11): el recuento ("3 articulos") va SIEMPRE en una linea; si no cabe, el nombre de
+  la ubicacion pasa a dos lineas.
+- NO hay recuadro de "Nombre" en "Falta tu Excel": pone siempre "Hola, Manuel". No debe aparecer NUNCA
+  ningun otro nombre (el que salia venia de ese recuadro, guardado en el iPhone).
+- El nombre del Excel que se ve en la app sigue siendo "ARTICULOS LOCALIZADOR PLUS" (sin "+").
+- VOZ: si la voz esta hablando y se corta para decir otra cosa (por ejemplo al pulsar "Ver la foto" o pasar
+  de foto), hace una PAUSA de medio segundo antes de la frase nueva, para que se note el cambio. Si no estaba
+  hablando, empieza como antes (0,12 s). Ademas, al callarse se anula tambien la frase que iba a empezar.
+- BUSQUEDA: si lo que se pide es EXACTAMENTE el nombre de un articulo (p. ej. "3 EN 1" o "3 JUEGOS DE LLAVES
+  DE ALLEN"), es una busqueda nueva: sus numeros ya no se toman como la eleccion de la busqueda anterior.
+  Antes, buscados justo despues de otra busqueda, ensenaban un cajon en vez de "Lo tienes aqui" (y "3 EN 1"
+  perdia su segunda ubicacion). Las 16 pantallas quedan identicas pixel a pixel.
+- SOLO iPHONE: boton "Leer instrucciones" en la pantalla roja ("Falta tu Excel"), en el hueco libre donde en la
+  azul va "Ver todo lo que hay guardado" (mismo sitio y tamano; en la azul no sale). Abre una ventana del MISMO
+  tamano, sitio y fondo que la del Excel con 5 instrucciones: "Columna B: Posicion", "Columna C: Ubicacion",
+  "Columnas D y E combinadas: Articulo" (solo articulos por comas; la "y" no separa: teclado y raton es uno),
+  "Columnas D y E sin combinar: Fotos y Articulos" (D foto dentro de la celda; E articulos; comentario de la
+  celda C = titulo de la foto) y "Al terminar" (no cambiar la fila 4; guardar y recargar el Excel) y los botones "Escuchar" (azul del Armario azul, con altavoz;
+  las lee en voz alta) y "Volver" (verde, como todos los Volver; cierra y calla).
+  Integrado en la app: funciona antes de cargar el Excel. Con "Activar modo zoom" se amplia con dos dedos como
+  una lupa. El ordenador NO lleva este boton (su pantalla de "Falta tu Excel" es distinta): queda igual.
+- SOLO iPHONE: "Escuchar" pasa a "Parar" (y vuelve al parar, al terminar o al salir). Columna C: "En Buhardilla
+  esta zona se deja vacia". Los textos que van pasando al leer el Excel (terminan en "...") salen abajo del todo
+  de la ventana; los mensajes fijos siguen en su sitio. Arreglado: "Leer instrucciones" ya no tapa los mensajes.
+- SOLO iPHONE: la ventana roja sale si el aparato no tiene datos Y la primera vez que se abre una ENTREGA
+  nueva (marca const ENTREGA en el index.html; si cambia, se borra la copia del Excel y se pide cargarlo).
+- iPHONE Y ORDENADOR: la primera vez que se abre una ENTREGA nueva, las tres casillas (zoom, comentario en
+  fotos, voz) empiezan DESACTIVADAS. En el ordenador se conserva el Excel cargado.
+  REGLA: cambiar la marca ENTREGA (const ENTREGA, al principio del archivo) en cada entrega en la que cambie
+  el index.html del iPhone o el LocalizadorPlus V1.html del ordenador.
+- RAYITAS (iPhone y ordenador): 1.a pulsacion "Tu Excel", 2.a instrucciones (mismo tamano/sitio/fondo; en el
+  ordenador se anadio esta ventana), 3.a nada. Volver: instrucciones -> Tu Excel -> principal. Barra negra
+  siempre con color fuerte. Simbolo: principal = una raya con circulo a la derecha; Tu Excel = dos rayas (en las demas pantallas no sale); instrucciones = una raya con circulo a la izquierda; roja del iPhone = sin simbolo.
+- Si se gira el iPhone o cambia el tamano de la ventana con las instrucciones abiertas, se ajustan solas.
+- Las instrucciones, al abrirlas, siempre se ven desde la primera linea (aunque antes se subieran o bajaran).
+- CAMBIOS FINALES (iPhone y ordenador):
+  * Instrucciones SIN boton "Escuchar": solo "Volver", del mismo tamano que el "Volver" de Tu Excel; sin reborde.
+  * En instrucciones, pulsar el simbolo de arriba vuelve atras a la primera (a Tu Excel o a la roja).
+  * Las ventanas roja, Tu Excel e instrucciones: SIEMPRE el mismo tamano y sitio (el grande, de debajo de la
+    barra negra hasta abajo), vengan de donde vengan.
+  * El simbolo (rayitas) SOLO sale en la pantalla principal y en sus ventanas. En estanterias, cajas, cajones,
+    buhardilla, Ver todo, resultados... no sale ni se puede pulsar. Tu Excel e instrucciones solo desde la principal.
+  * Instrucciones: la letra se ajusta sola (midiendo en el aparato) para que las 5 instrucciones quepan enteras,
+    sin subir ni bajar; la lista queda bloqueada. El usuario puede ampliar con el zoom.
+- ZOOM (solo iPhone): tambien en Tu Excel, la roja y las instrucciones; ahi la ampliacion sigue a los dedos.
+- La portada de la app ya enseña el icono (tarda un poco en aparecer): no tocar.
+- ENTREGA 18/10/2026 (iPhone 2026-10-18-5, ordenador 2026-10-18-4). Sustituye a lo de arriba en lo que choque:
+  * SIMBOLO DE ARRIBA (iPhone y ordenador): SOLO sale en la pantalla principal, con LAS DOS RAYAS (el que antes
+    salia en "Tu Excel"), porque es la unica que actua: abre "Tu Excel" y nada mas. En "Tu Excel", en las
+    instrucciones, en la roja del iPhone y en todas las demas pantallas NO sale ningun simbolo ni se puede pulsar
+    (el hueco se mantiene). Para ir y volver entre "Tu Excel" y las instrucciones: "Seguir" y "Volver".
+  * "TU EXCEL" (iPhone y ordenador): abajo, en la misma linea, "Volver" (verde, a la izquierda; vuelve a la
+    principal) y "Seguir" (burdeos #9F1139, a la derecha; abre las instrucciones). Entre los dos ocupan EXACTAMENTE
+    el ancho, el alto y la posicion del "Volver" de las instrucciones. La version va ENCIMA de los botones. El alto
+    total de la ventana no cambia, asi que lo de arriba (titulo, datos, botones, casillas) queda igual.
+    iPhone: los textos que van pasando al leer el Excel salen en el sitio de la version. En la roja no salen.
+  * ARREGLADO (iPhone y ordenador): reborde naranja alrededor de "Tu Excel" al volver de las instrucciones (el foco
+    volvia a la ventana y se pintaba su contorno). Ahora no queda nada marcado.
+  * Las instrucciones quedan igual (tamano, sitio, letra, "Volver" verde y lo que hace).
+  * INSTRUCCIONES (iPhone 2026-10-18-5, ordenador 2026-10-18-4): abajo, en la misma linea, "Volver" (verde, a la
+    izquierda; vuelve a "Tu Excel") e "Inicio" (morado oscuro #7C3AED, a la derecha; antes se probo turquesa #0E8F9A;
+    cierra las instrucciones y "Tu Excel"
+    y va a la pantalla principal). Mismo ancho, alto, letra y separacion que "Volver" y "Seguir" de "Tu Excel", en la
+    misma posicion. En el iPhone, abiertas desde la roja (sin Excel no hay principal), "Inicio" vuelve a la roja.
+  * SOLO iPHONE: las ventanas roja, "Tu Excel" e instrucciones llegan ABAJO del todo: el margen de abajo es el mismo
+    que el de los lados (7), sin dejar la zona de la rayita vacia (antes quedaba ~1 cm gris). Cabe dentro de las
+    esquinas redondeadas y la rayita queda sobre el blanco de la ventana, por debajo de los botones. Como la ventana
+    es mas alta, su contenido se amplia un poco mas (regla de siempre: lo maximo que cabe sin deslizar).
+- ENTREGA 20/10/2026 (iPhone y ordenador 2026-10-20-1):
+  * EL EXCEL SE QUEDA GUARDADO aunque se apague el aparato o se cierre del todo la app. Antes la copia (con las
+    fotos) iba en localStorage, donde Safari solo deja unos 5 MB; con las 15 fotos no cabia, no se guardaba nada
+    sin avisar y, al apagarse el iPhone, salia siempre la roja. Ahora va en IndexedDB (base "locplus", almacen
+    "datos", clave "copia"), con sitio de sobra, y se pide que no se borre sola. Si no se pudiera guardar, al cargar
+    sale un aviso. Una copia antigua en localStorage se pasa sola a IndexedDB (el ordenador conserva su Excel).
+  * Sigue la regla: en el iPhone la roja sale solo la 1.a vez que se abre una entrega nueva.
+- ENTREGA 20/10/2026 (iPhone y ordenador 2026-10-20-2):
+  * iPhone ABIERTO DESDE EL ENLACE (Safari, sin poner en el inicio) y ordenador ABIERTO SIN EL ICONO DEL
+    ESCRITORIO (el .html suelto o en el navegador normal): sale la pantalla principal ("Hola, Manuel" con
+    Estanteria 1, Estanteria 2, Armario gris, Armario azul y Buhardilla, con sus cuentas), QUIETA: no se puede
+    pulsar nada (recuadros, buscador, microfono, rayitas, "Ver todo"), no sale el teclado, no habla y no se guarda
+    nada. Las cuentas van fijas en el archivo (sitiosDeMuestra); si cambian zonas en el Excel, cambiarlas ahi.
+  * ABIERTO DESDE EL ICONO (inicio del iPhone / Escritorio del ordenador): la primera vez sale la ventana roja
+    "Falta tu Excel" con las tres casillas desactivadas (marca "locplus-instalada"), aunque hubiera datos.
+    Despues de cargar el Excel, abre normal. El ordenador sabe que viene del icono porque el programa lo abre en
+    http://localhost:47622 (o con ?app=1 si tuviera que abrirlo como archivo).
+  * ORDENADOR IGUAL QUE EL IPHONE: su "Falta tu Excel" pasa a ser la misma ventana roja del iPhone (la de "Tu
+    Excel" con boton rojo, "Leer instrucciones" en el hueco de "Ver todo" y las tres casillas). No se puede cerrar
+    (tampoco con Esc) hasta cargar el Excel; al cargarlo pasa a "Tu Excel".
+  * Foto de pantallas en el orden real: 1 arranque, 2 principal (bloqueada, desde el enlace), 3 Falta tu Excel,
+    4 instrucciones, 5 Tu Excel, y luego el resto.
+- ENTREGA 20/10/2026 (solo ordenador 2026-10-20-3; el iPhone no cambia y sigue en 2026-10-20-2):
+  * Al cargar el Excel, los textos que van pasando ("Abriendo el Excel...", "Leyendo la hoja...", "Preparando las
+    fotos: n de m...", "Guardando tus datos...") ya no salen entre el boton de cargar y el siguiente: salen abajo,
+    debajo de las tres casillas, sin mover nada, y se quitan al terminar. En la roja, abajo del todo; en "Tu Excel",
+    en el sitio de la version (justo encima de "Volver" y "Seguir"). Igual que en el iPhone.
+- ENTREGA 20/10/2026 (iPhone 2026-10-20-3, ordenador 2026-10-20-4):
+  * Instrucciones: el boton "Inicio" pasa de morado a burdeos (#9F1139), el mismo color que "Seguir" de "Tu Excel".
+  * Pantalla principal quieta (abierta sin instalar: Safari sin poner en el inicio, o el .html suelto en el
+    ordenador): los recuadros de colores llevan SOLO el nombre de la zona, sin cajas, niveles, cajones ni
+    articulos, porque esas cuentas de muestra no eran las del Excel. Con el Excel cargado la principal no cambia.
+  * El zip con todo se llama "LocalizadorPlus V1 TODO.zip". Con el Excel cargado (desde el icono) la principal
+    SIGUE mostrando las cuentas reales: asi lo decidio el usuario; solo se quitan en la principal quieta.
+- ENTREGA 22/10/2026 (iPhone 2026-10-22-4, ordenador 2026-10-22-1):
+  * VOZ: antes de cada frase se quita la pausa en la que el iPhone puede dejar la voz (pantalla bloqueada mientras
+    hablaba, llamada, Siri, otra app, apagado). Cortar la frase anterior no quita esa pausa y todo lo nuevo se
+    quedaba sin sonar: era el fallo de "la voz se queda muda de vez en cuando".
+  * BARRA DE BUSCAR CON EL TECLADO ABIERTO: en cualquier pantalla, mientras se escribe, la pantalla no se puede
+    arrastrar con el dedo; asi la barra (amarillo + "Buscar") no se puede bajar y esconder detras del teclado. El
+    propio cuadro de texto queda libre para mover el cursor (igual que ya pasaba en la principal).
+  * Si al tocar el cuadro el iPhone no sube la barra y el teclado la tapa, la app la sube sola, lo justo, deslizandose
+    (0,25 s) cuando el teclado ya ha terminado de subir. Si el iPhone ya la sube (lo normal), la app no hace nada y la
+    barra sube con el teclado como siempre. (En la entrega 2026-10-22-2 la subia de golpe mientras subia el teclado
+    y daba un "golpe": corregido en la 2026-10-22-3.)
+  * Al cerrarse el teclado se recoloca la pagina en el mismo punto (sin moverla), para que la barra no se quede a
+    media pantalla mezclada con los cajones (fallo que pasaba de vez en cuando).
+  * Con el boton redondo "Volver" a la vista, al final de las listas queda un hueco: bajando del todo, lo ultimo
+    queda por encima del boton (antes tapaba, p. ej., "41 articulos" de la Buhardilla en "Ver todo", y en el ultimo
+    boton de la lista se pulsaba "Volver" sin querer).
+  * El boton amarillo "Ver todo lo que hay guardado" de abajo y el naranja de "No lo encuentro" callan la voz (antes
+    seguia leyendo lo de la pantalla anterior) y quitan la linea "Buscando: ..." de la busqueda anterior.
+  * Comprobado: 29 pantallas iguales pixel a pixel (solo cambia el final de las listas con "Volver"), la voz dice
+    las mismas frases, recorridos al azar sin fallos (mas de 2.000 pasos, 750 con la version final). El teclado y la voz reales del iPhone no
+    se pueden simular: confirmarlo usandolo.
+  * ORDENADOR (2026-10-22-1): los mismos arreglos de la voz (quitar la pausa antes de cada frase), del amarillo y
+    el naranja (callan la voz y quitan "Buscando: ...") y del hueco al final de las listas para que "Volver" no tape
+    lo ultimo. En el ordenador ese hueco SOLO se pone cuando hace falta (la lista ya se desplaza, o "Volver" queda
+    encima de lo ultimo): asi ninguna pantalla que antes cabia entera saca barra de desplazamiento. Lo del teclado
+    (barra encima del teclado, no arrastrar, recolocar) es solo del iPhone: el ordenador no tiene teclado en pantalla.
+    Comprobado a 1100 x 800 y 520 x 760: 29 pantallas iguales pixel a pixel salvo "Ver todo" bajada del todo, misma
+    voz, recorridos al azar sin fallos, carga del Excel bien. Al abrir la entrega nueva, el Excel se conserva y las
+    tres casillas empiezan desactivadas (regla de siempre).
+- ENTREGA 22/10/2026 (SOLO iPHONE 2026-10-22-5; el ordenador no cambia y sigue en 2026-10-22-1):
+  * DICTADO: mientras dictas salen SIEMPRE los puntitos y no se ve nada de lo que el iPhone va escribiendo a medias.
+    Antes solo salian si el iPhone metia varias palabras de golpe; si metia una sola, se veia el texto a medias.
+    Ahora es dictado todo lo que entra en el cuadro SIN pulsar una tecla. Los puntos van sobre un fondo blanco que
+    tapa todo el cuadro (tambien el texto gris con el que el iPhone pinta lo que aun no ha terminado de entender).
+    Cuando el texto lleva 2 s sin cambiar (y el iPhone ha terminado), se ensena lo entendido, con los numeros en
+    cifra, tambien sobre fondo blanco. Escribiendo a mano con el teclado, el texto se ve como siempre.
+  * ARREGLADO: un trozo del dictado se quedaba pintado en gris debajo de "¿Que buscas?" aunque el cuadro estuviera
+    vacio. Pasaba al vaciar el cuadro mientras el iPhone seguia dictando (al pulsar "Buscar" a medio dictar). Ahora
+    primero se cierra el teclado (y con el, el dictado), despues se vacia el cuadro y se vuelve a pintar limpio. La X
+    a medio dictar hace lo mismo y deja el cuadro listo para escribir.
+  * Comprobado: las pantallas iguales que en la entrega anterior pixel a pixel; dictado simulado (palabra a palabra,
+    con texto provisional, "Buscar" y X a medio dictar) y escritura a mano. El dictado real del iPhone no se puede
+    simular: confirmarlo usandolo.
+- CAMBIO 23/10/2026 (iPhone y ordenador; la marca ENTREGA NO se cambio: siguen en 2026-10-22-5 y 2026-10-22-1,
+  para no pedir otra vez el Excel ni desactivar las casillas):
+  * TRANSICIONES SUAVES, SIN GOLPES: al cambiar de pantalla (recuadros, cajas, cajones, elecciones, "Ver todo lo que
+    hay aqui", amarillo, naranja, filas de "Todo lo que hay", "Buscar" y "Volver") lo que se ve se funde en 0,14 s y
+    la pantalla nueva aparece con su fundido (0,22 s). Funcion pasarSuave. El boton "Volver" aparece con fundido.
+    Las instrucciones se abren (0,3 s) y se cierran (0,25 s) con fundido; "Volver" e "Inicio" de las instrucciones y
+    "Ver todo" de "Tu Excel" cierran con fundido; la pantalla de detras se funde al abrir y cerrar "Tu Excel".
+    La busqueda desde la principal con el teclado abierto queda exactamente igual. Dos "Volver" seguidos siguen
+    yendo dos pantallas atras. El ordenador no tenia ningun fundido: lleva los mismos que el iPhone, Esc cierra
+    "Tu Excel" y las instrucciones con fundido, y el paso de "Falta tu Excel" a "Tu Excel" lleva el fundido del
+    iPhone. El micro del ordenador no se toco. Las fotos (abrir/cerrar) no se tocaron.
+  * VOZ: con MAS de 6 articulos dice "...QUINTO, y SEXTO. Los demas los tienes en la lista": la coma antes de la
+    "y" hace una pausa corta para que el quinto y el sexto no parezcan uno. Con 6 o menos y en busquedas, igual.
+  * Comprobado: 29 pantallas identicas pixel a pixel (iPhone 320 x 693; ordenador 1100 x 800 y 520 x 760),
+    fotograma a fotograma sin saltos, voz igual salvo esa frase, uso al azar sin fallos. Confirmar en el iPhone
+    real como suena la pausa.
+- CAMBIO 24/10/2026 (iPhone y ordenador; la marca ENTREGA sigue sin cambiar):
+  * FOTOS: se abren (0,22 s) y se cierran con la X (0,2 s) con fundido, como las pantallas.
+  * La X de las fotos lleva SIEMPRE el cuadrado naranja, pegado a la X (outline-offset -5 px).
+  * Titulo de la foto con el mueble en una linea y el cajon centrado debajo ("ARMARIO GRIS" / "CAJON 4", sin
+    coma, letra de siempre 26 px) y el comentario debajo, a todo lo ancho, con letra fija de 16 px (antes 17):
+    en el iPhone pasa de 4-5 lineas a 3; la misma letra en todas las fotos, sin cortar nunca el texto. Se probo
+    antes el titulo en una sola linea a 21 px y el usuario eligio esta forma.
+  * "LocalizadorPlus V1 todas las pantallas.png": cambiada solo la pantalla 10 (foto del cajon 4, misma foto real);
+    las otras 15 identicas pixel a pixel.
+  * Comprobado: las 29 pantallas de siempre identicas pixel a pixel en las dos versiones (iPhone 320 x 693;
+    ordenador 1100 x 800 y 520 x 760).
+  * REGLA DEL USUARIO: todo cambio se aplica SIEMPRE a las dos versiones (iPhone y ordenador), salvo que estropee algo.
+  * ZIP (24/10/2026, mas tarde): al copiar desde el zip Windows pedia permisos de administrador (carpeta con fecha
+    30/12/1899). Ya venia asi en los zip originales. Las carpetas dentro de los zip llevan ahora fecha real y
+    atributo de carpeta de Windows; el contenido de los archivos no cambia. REGLA: hacerlo asi en toda entrega.
+  * FORMA DE ENTREGAR (24/10/2026, definitiva): un solo "LocalizadorPlus V1 TODO.zip" que tiene directamente
+    (sin carpeta "LocalizadorPlus V1" dentro): la carpeta "LocalizadorPlus V1 ordenador" normal (para copiar y
+    pegar), "LocalizadorPlus V1 iPhone.zip" (el unico zip; lo de dentro se sube a GitHub Pages), el contexto maestro y la imagen de todas
+    las pantallas. Windows no deja copiar desde un zip dentro de otro zip. REGLA: entregar siempre asi.
+- CAMBIO 24/10/2026 (tarde; iPhone y ordenador; la marca ENTREGA sigue sin cambiar):
+  * La X de cerrar las fotos pasa a NARANJA, y el cuadrado naranja se acerca a la X (de -5 a -8 px). La X no
+    cambia de tamano ni de sitio. Elegida por el usuario ("A. Un poco mas cerca") entre varias muestras.
+  * "todas las pantallas.png": cambia solo la X de la pantalla 10.
+  * Comprobado: 29 pantallas identicas pixel a pixel en las dos versiones y misma voz; en la foto solo cambia la X.
+- CAMBIO 25/10/2026 (iPhone y ordenador; la marca ENTREGA sigue sin cambiar):
+  * La X de cerrar las fotos pasa a ser un BOTON REDONDO con relieve y una X blanca gruesa (como la imagen de
+    ejemplo del usuario, dibujado de nuevo): AZUL en las fotos del armario azul y GRIS en las del gris. Mismo
+    tamano y sitio. Se quitan la X y el cuadrado naranjas del dia anterior.
+  * Comprobado: cambia de color al pasar de una foto del gris a una del azul y al volver; 29 pantallas identicas
+    pixel a pixel en las dos versiones y misma voz; en la foto solo cambia la X. "todas las pantallas.png":
+    cambia solo la X de la pantalla 10.
+- CAMBIO 25/10/2026 (2) (iPhone y ordenador; la marca ENTREGA sigue sin cambiar):
+  * BUSQUEDA "RELACIONADA" (pedido por Manuel): si se corrige una palabra mal escrita Y NINGUNA de las
+    palabras buscadas existe tal cual (sin contar mayusculas ni singular/plural), el texto dice "He encontrado
+    5 articulos en 4 ubicaciones relacionados con tu busqueda." y la voz empieza por "He encontrado cinco
+    articulos en cuatro ubicaciones relacionados con tu busqueda." y luego dice los sitios. Ejemplo: "puercas"
+    -> relacionado. "coche de puercas" NO es relacionado porque "coche" existe (texto y voz normales).
+    Con "y" (varias cosas), solo es relacionado si lo es cada parte.
+  * NEGRITA: solo la palabra bien escrita (sin contar mayusculas ni singular/plural); la mal escrita nunca
+    en negrita (decision del usuario).
+  * En una busqueda relacionada, la palabra corregida sale en ROJO CLARITO (#e57373), letra normal, sin
+    negrita, sin subrayado y sin cursiva. Elegido por el usuario tras ver muestras con rayas y con cursiva
+    (no le gustaron). Clase .relacionada y RAICES_RELACIONADAS en resaltar. En "coche de puercas" no hay rojo.
+  * Quitar "V1" de los nombres: se propuso y el usuario decidio NO hacerlo.
+  * Comprobado: "Tuerca", "puercas", "tuercas de coche" y "coche de puercas" en las dos versiones (rojo solo en
+    "puercas"); 29 pantallas identicas en las dos versiones y misma voz. "todas las pantallas.png" no cambia.
+- CAMBIO 26/10/2026 (N-49; la marca ENTREGA sigue sin cambiar):
+  * RAYAS GRISES al ampliar una foto de cajon y moverla muy rapido (iPhone, sobre todo armario gris). Causa:
+    Safari redibujaba la foto en cada movimiento y no borraba su borde de arriba y de abajo. Arreglo solo de
+    CSS: iPhone, la foto va en su propia capa (will-change:transform) y el hueco de la foto es negro.
+    Ordenador: solo el hueco negro (la capa propia emborronaba alli la foto ampliada y alli no hay rayas).
+  * El zoom funciona igual (misma posicion y tamano al ampliar y mover). Pantallas identicas;
+    "todas las pantallas.png" no cambia. Falta que el usuario lo confirme en su iPhone.
+- CAMBIO 26/10/2026 (N-50; solo iPhone; la marca ENTREGA sigue sin cambiar):
+  * El iPhone esta en GitHub Pages (repositorio "Localizar-Plus", direccion
+    https://<usuario>.github.io/Localizar-Plus/).
+  * FUNCIONA SIN INTERNET: nuevo archivo "LocalizadorPlus V1 sin internet.js" en el zip del iPhone y una sola
+    linea al final de index.html que lo registra. La primera vez que se abre con internet guarda en el iPhone
+    la app, las 9 imagenes de arranque y las letras; despues abre siempre desde lo guardado (sin internet o
+    aunque GitHub no funcione). Con internet baja la version nueva en segundo plano y se ve la siguiente vez
+    que se abre (tras subir una entrega, abrir la app dos veces).
+  * REGLA: en cada entrega nueva del iPhone, cambiar VERSION (el numero de la ultima entrega; ahora "N-61") en ese archivo y meterlo siempre
+    en el zip con el mismo nombre. El ordenador no cambia (ya funciona sin internet).
+  * Comprobado: pantalla identica pixel a pixel con internet y sin internet (con las mismas letras); la version
+    nueva aparece en la segunda apertura. "todas las pantallas.png" no cambia. Falta confirmarlo en el iPhone.
+- CAMBIO 28/10/2026 (N-51; solo iPhone; NO SIRVIO, sustituido por N-53):
+  * Al tocar "¿Que buscas?" en cualquier pantalla que no sea la principal (armario gris, buhardilla, cajas,
+    cajones, busquedas...), la lista y "Volver" se cerraban de golpe y la pagina saltaba arriba mientras
+    subia el teclado ("un pequeno golpe"). En la principal ya se hacia bien (al poner el dedo).
+  * Ahora, al poner el dedo en el cuadro, la lista y "Volver" se funden en 0,14 s (como al cambiar de
+    pantalla) y despues se quitan como antes. Si no se abre el teclado (solo rozar) o el dedo se mueve para
+    desplazar la lista, vuelven con fundido. La principal no cambia.
+  * Ordenador: no cambia (no sube teclado ni se esconde la pantalla al escribir).
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-51". Comprobado: 31 pantallas identicas pixel a
+    pixel; uso al azar sin errores. "todas las pantallas.png" no cambia. Falta confirmarlo en el iPhone.
+- CAMBIO 28/10/2026 (N-52; solo texto): el iPhone se publica SOLO en GitHub Pages (decision del usuario).
+  Se quitan todas las referencias a Netlify del contexto maestro, de este HISTORIAL y del LEEME. La app no
+  cambia: no hay que subir nada a GitHub por este cambio.
+- CAMBIO 28/10/2026 (N-53; solo iPhone; NO SE USO, sustituido por N-54):
+  * Al tocar "¿Que buscas?", TODAS las pantallas se cierran con el MISMO sistema que la principal: la
+    pantalla de detras se quita nada mas poner el dedo, ANTES de que suba el teclado (antes se quitaba
+    cuando el teclado ya subia y se veia cerrarse). Si solo rozas el cuadro, vuelve a los 0,9 s como en la
+    principal; si mueves el dedo para desplazar la lista, vuelve al momento y en el mismo punto.
+  * Se quito todo lo de N-51 (el fundido de 0,14 s no servia). La principal y el ordenador no cambian.
+  * Leccion: si el usuario pide que algo quede "igual que" otra pantalla, usar el MISMO mecanismo.
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-53". Comprobado: 31 pantallas identicas pixel a
+    pixel; 250 pasos al azar sin errores. "todas las pantallas.png" no cambia. Falta confirmarlo en el iPhone.
+- CAMBIO 28/10/2026 (N-54; solo iPhone; sustituido por N-55: cierre y teclado iban casi a la vez):
+  * REGLA DEL USUARIO: la pantalla de detras solo desaparece con UN TOQUE en "¿Que buscas?". Al desplazar
+    la lista o pasar el dedo por encima del cuadro NO puede desaparecer nada, ni un instante (N-53 lo hacia).
+  * Ahora se quita al LEVANTAR el dedo, solo si ha sido un toque (sin moverse mas de 10 px), justo antes de
+    que el iPhone ponga el foco y suba el teclado: primero se cierra la pantalla y luego sube el teclado,
+    igual que en la principal. La principal y el ordenador no cambian.
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-54". Comprobado: deslizar por el cuadro = 0
+    fotogramas sin lista; 31 pantallas identicas pixel a pixel; 250 pasos al azar sin errores.
+    "todas las pantallas.png" no cambia. Falta confirmarlo en el iPhone.
+- CAMBIO 28/10/2026 (N-55; solo iPhone; la marca ENTREGA sigue sin cambiar; sustituye a N-54):
+  * Igual que la principal no se puede: el iPhone sube el teclado al levantar el dedo y no deja retrasarlo;
+    la principal se cierra al poner el dedo, y eso en las demas haria desaparecer la lista al desplazarla.
+    El usuario eligio el PUNTO INTERMEDIO: se cierra cuando el dedo lleva 0,06 s quieto en "¿Que buscas?"
+    (antes de levantarlo, y por tanto antes del teclado); si el toque es mas rapido, al levantarlo.
+  * Al desplazar o pasar el dedo por encima del cuadro no desaparece nada. Si apoyas el dedo quieto y luego
+    deslizas, la lista parpadea un instante y vuelve en el mismo punto (riesgo aceptado por el usuario).
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-55". Comprobado: deslizar = 0 fotogramas sin lista;
+    31 pantallas identicas pixel a pixel; 250 pasos al azar sin errores. Falta confirmarlo en el iPhone.
+- CAMBIO 05/11/2026 (N-56; iPhone y ordenador; la marca ENTREGA sigue sin cambiar). El iPhone de Manuel
+  tiene iOS 27.2.
+  * iPhone, FRANJA DE ARRIBA: desde iOS 26.1 (y sigue en iOS 27) el iPhone pinta un degradado propio encima
+    de la hora y la bateria en las apps del inicio con la barra "black-translucent". Salia claro (del gris
+    claro del fondo de la pagina, #E3E5E2), tambien en la foto de los cajones; quitando transparencias, mas
+    blanco aun. Arreglo (opcion A, elegida por el usuario): la barra pasa a ser SOLIDA y NEGRA
+    (apple-mobile-web-app-status-bar-style = "black"). La pagina empieza justo debajo de la barra: cabecera,
+    textos y X de la foto quedan donde estaban. La franja es negra en todas las pantallas (tambien con la
+    ventana del Excel abierta, donde la cabecera es gris oscuro).
+    IMPORTANTE: el iPhone lee este ajuste SOLO al anadir el icono a la pantalla de inicio. Hay que quitar
+    el icono, volver a anadirlo desde Safari y cargar el Excel una vez (sale la roja y las casillas vienen
+    desactivadas).
+  * VOZ ("clac" al empezar y al cortar): al tocar una zona el motor de voz recibia tres ordenes seguidas
+    (cortar, cortar, quitar pausa) aunque estuviera callado, y la frase empezaba a los 0,12 s. Ahora:
+    la voz empieza SIEMPRE a los 0,5 s del toque (con o sin frase anterior); solo se corta si de verdad esta
+    hablando; la pausa solo se quita si el motor esta en pausa o si a los 1,5 s la frase sigue sin empezar
+    (sigue valiendo el arreglo N-35); la frase vacia del primer toque en el buscador va con volumen 0.
+    Igual en el ordenador.
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-56". Comprobado: pantallas identicas (iPhone 320 x 693,
+    ordenador 1100 x 800); voz con motor simulado en 8 casos, antes y despues, en las dos versiones.
+    "todas las pantallas.png" no cambia. No se puede simular: la barra real de iOS 27 ni el sonido real.
+- CAMBIO 05/11/2026 (N-57; iPhone y ordenador; la marca ENTREGA sigue sin cambiar). Tras probar N-56 en el iPhone:
+  * VOZ, LA PRIMERA VEZ QUE SE ABRE LA APP: seguia el "clac" y la primera frase empezaba mal (luego bien).
+    Causa: el motor de voz estaba dormido y se encendia a la vez que la primera frase; el "despertador" que
+    habia (frase vacia) solo actuaba al tocar "¿Que buscas?". Ademas la lista de voces llega tarde la primera
+    vez. Arreglo: con el PRIMER TOQUE en cualquier sitio (y otra vez al volver a la app) se dice una frase
+    MUDA ("a", volumen 0) que enciende el motor; la frase de verdad llega medio segundo despues y no la corta
+    (la frase muda no cuenta como "hablando"). Solo si hay alguna casilla de voz activada. La voz se elige
+    justo antes de hablar. Igual en el ordenador.
+  * iPhone, FOTOS: la franja de arriba salia del azul oscuro de la cabecera (#1E2530, el "theme-color") y no
+    del negro de la foto. Ahora, al abrir una foto, el theme-color pasa a negro (#000000) y al cerrarla vuelve
+    a #1E2530. No hace falta volver a quitar el icono.
+  * REGLA DEL USUARIO: en cada entrega va SIEMPRE la carpeta del ordenador (aunque no cambie), con las cuatro
+    cosas juntas en el TODO.
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-57". Comprobado: voz con motor simulado en 12 casos en
+    las dos versiones (primer toque al abrir: frase muda y la de verdad a los 0,5 s sin cortarla; voz
+    desactivada: no se toca el sonido; volver a la app: se despierta otra vez); color de la franja al abrir y
+    cerrar una foto; pantallas identicas y sin errores. Falta confirmarlo en el iPhone.
+- CAMBIO 05/11/2026 (N-58; iPhone y ordenador; la marca ENTREGA sigue sin cambiar). Tras probar N-57 en el iPhone:
+  * FRANJA DE ARRIBA: con la foto abierta seguia azul oscura (#1E2530) (captura del usuario). El iPhone lee el
+    color de la franja AL ABRIR LA APP y no lo cambia despues: cambiarlo al abrir la foto (N-57) no sirve.
+    PETICION DEL USUARIO: franja NEGRA (hora, cobertura, wifi y bateria sobre negro) en TODAS las pantallas,
+    desde que se abre la app y con las fotos. Arreglo: theme-color = #000000 fijo en el index.html (se quita
+    lo de N-57). Seguro por si el iPhone cogiera el color de lo que hay arriba del todo: la cabecera y la
+    pantalla de arranque tienen color de fondo negro con una capa del color de siempre encima (se ven igual).
+    Para que el iPhone lea el color nuevo con seguridad: quitar el icono y volver a anadirlo (y cargar el
+    Excel una vez).
+  * VOZ AL NAVEGAR: la primera frase iba bien pero las siguientes (adelante, "Volver", fotos...) seguian con
+    el "clac". Causa: el motor de voz se duerme al terminar cada frase y N-57 solo lo despertaba con el primer
+    toque. Arreglo: CADA frase va precedida de la frase muda ("a", volumen 0) y la de verdad llega medio
+    segundo despues, igual que la primera. Igual en el ordenador.
+  * Ordenador: al decir "adios" el programa espera tambien el medio segundo antes de hablar (desde N-56
+    podia cerrarse antes de despedirse).
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-58". Comprobado: voz con motor simulado en 14 casos
+    en las dos versiones (cada frase con su frase muda delante, tambien navegando y cortando); pantallas
+    comparadas pixel a pixel con Edge: iPhone a 320 x 693 (principal y arranque), 375 y 430 identicas; a 390
+    solo cambia el suavizado del borde del icono de la cabecera (82 puntos, no se nota); ordenador identico.
+- CAMBIO 05/11/2026 (N-59; solo iPhone; la marca ENTREGA sigue sin cambiar). Tras probar N-58 (fotos negras bien;
+  voz bien):
+  * PETICION DEL USUARIO: la franja de arriba (hora, cobertura...) del MISMO color que la cabecera de "Localizador
+    Plus" (azul oscuro #1E2530) en TODAS las pantallas donde sale la cabecera (principal, estanterias, armarios,
+    "Ver todo", busquedas, "Falta tu Excel", "Tu Excel" con el Excel cargado, instrucciones...) y NEGRA solo en
+    las fotos de los cajones.
+  * Como lo decide el iPhone (iOS 27, barra solida): mira lo que hay pegado arriba de la pantalla y coge su color
+    de fondo; se salta lo que esta casi transparente. La foto se abria con un fundido que empezaba en 0 % y por eso
+    el iPhone se la saltaba (N-57 no sirvio); las ventanas del Excel y las instrucciones tienen un velo
+    transparente encima de todo, y con eso cogeria el gris del fondo.
+  * Arreglo: theme-color vuelve a #1E2530 y la cabecera a su color de siempre (se quita la capa negra de N-58);
+    la foto empieza su fundido al 12 % (no se nota) y debajo lleva una tira negra fija pegada arriba
+    (#franjaFoto, se enciende al abrir la foto y se apaga cuando ha terminado de irse); el velo invisible de
+    "Tu Excel"/"Falta tu Excel" y de las instrucciones tiene como color el azul de la cabecera pero recortado a
+    una caja de tamano cero (no se pinta nada) y sin fundido; la pantalla de arranque tiene como color de fondo
+    el azul con el gris de siempre encima. Ademas theme-color pasa a negro con la foto y vuelve al cerrarla.
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-59". Comprobado pixel a pixel con Edge a 320 x 693
+    contra la version anterior a todos estos cambios: principal, arranque, foto abierta, foto cerrada,
+    "Tu Excel", "Falta tu Excel" e instrucciones IDENTICAS; 375 y 430 identicas (a 390 cambia el suavizado del
+    icono, pero tambien cambia solo con anadir un comentario al archivo original: es de la captura). En la app:
+    arriba esta la cabecera (azul), el velo de las ventanas (azul) o la foto (negra, ya al 12 %) segun la
+    pantalla. Ordenador: no cambia. Falta confirmarlo en el iPhone.
+- CAMBIO 07/11/2026 (N-60; franja solo iPhone, voz iPhone y ordenador; la marca ENTREGA sigue sin cambiar):
+  * PETICION DEL USUARIO: al abrir la app, el gris claro hasta arriba del todo (sin franja); en TODAS las fotos,
+    negro hasta arriba (tambien detras de la hora, la cobertura y la bateria); el resto de pantallas igual.
+  * iPhone: la barra de arriba vuelve a ser TRANSPARENTE (black-translucent, como hasta N-55). El degradado que
+    el iPhone pinta encima sale del color de fondo de la pagina: ahora es azul oscuro (#1E2530) con el color de
+    siempre pintado encima (se ve igual), negro con una foto abierta y gris claro al arrancar. Se quita el azul
+    de la pantalla de arranque de N-59. Hay que quitar el icono, volver a anadirlo y cargar el Excel una vez.
+  * Voz (iPhone y ORDENADOR): al cortar la voz (cerrar una foto, "Volver", pasar rapido) se dice justo despues la
+    frase muda (volumen 0), para que el sonido no se apague de golpe ("clac").
+  * Toque rapido en "Que buscas?": se deja como N-55 (el teclado tiene que salir siempre; retrasarlo no es seguro).
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-60". Comprobado: pantallas identicas pixel a pixel a N-59
+    (320 x 693); voz con motor simulado: cortar = cancel + frase muda. Falta confirmarlo en el iPhone.
+- CAMBIO 07/11/2026 (N-61; iPhone y ORDENADOR; la marca ENTREGA sigue sin cambiar). Tras probar N-60 (arranque
+  bien; fotos con un tono distinto arriba; "clac" al cortar la voz):
+  * FOTOS: el usuario quiere la pantalla de la foto ENTERA del mismo color hasta arriba (le da igual el color).
+    El iPhone no cambia el color de la zona de la hora dentro de la sesion, asi que el fondo de las fotos pasa a
+    ser el AZUL OSCURO de la cabecera (#1E2530) en vez de negro, en las dos versiones.
+  * VOZ: al cambiar de pantalla, cerrar una foto o "Volver", la voz TERMINA LA PALABRA que esta diciendo y se para
+    (corta al empezar la siguiente palabra; si el aparato no avisa de las palabras, al momento; como mucho 0,45 s).
+    El "clac" era el corte a mitad de palabra.
+  * Toque rapido en "Que buscas?": sigue como N-55 (decision del usuario: el teclado tiene que salir siempre).
+  * VERSION de "LocalizadorPlus V1 sin internet.js" = "N-61". Comprobado con motor de voz simulado (las dos
+    versiones). "todas las pantallas.png": la foto (pantalla 10) con fondo azul. Falta confirmarlo en el iPhone.
+- Pendiente para mas adelante (pedido, aun NO hecho): botones "Exportar copia" e "Importar copia" en el
+  menu de Ajustes (las rayitas). Antes, ensenar foto y esperar el visto bueno.
+
+=========================================================================
+HISTORIAL ANTERIOR (Localizador Plus hasta la V21)
+=========================================================================
+LOCALIZADOR PLUS - HISTORIAL Y DECISIONES (para seguir en un chat nuevo)
+=========================================================================
+Partió del Localizador v50 (iPhone y ordenador). Convive con la v50 sin pisarla
+(otra dirección en el iPhone; otra carpeta, icono y puerto 47622 en el ordenador).
+
+EXCEL "ARTÍCULOS LOCALIZADOR PLUS" (antes "CAJAS DE GARAJE CON CELDAS COMBINADAS")
+- Cabecera de la columna de articulos: "ELEMENTO" o "ARTÍCULO(S)" (las dos valen). Otra palabra hace salir
+  un recuadro "Pos" de mas.
+- Columna B: ubicación (estantería, armario, buhardilla...). C: caja / cajón / nivel.
+- Estanterías y buhardilla: D y E combinadas = artículos.
+- Armario gris y armario azul (cajones): D = FOTO del cajón (colocada en la celda);
+  el COMENTARIO de la celda del cajón (C) = TÍTULO de la foto; E = artículos.
+- Solo se busca en los artículos (opción B): el título NO se usa para buscar.
+- REGLA DE ARTICULOS (V20): lo que hay entre dos COMAS es UN articulo, con su texto original. La "Y"
+  NUNCA separa ni se reconstruye nada. Unica excepcion (solo une): un trozo entre comas que son solo
+  palabras de tamaño/descripcion ("GRANDES", "MEDIANOS Y PEQUEÑOS") se pega al articulo anterior.
+- BUSQUEDA (V20): dentro de cada articulo, sin mezclar dos. Si sale MAS DE UN SITIO, SIEMPRE en el orden
+  de la pantalla principal (Estanteria 1, Estanteria 2, Armario gris, Armario azul, Buhardilla): ESO NO SE
+  CAMBIA. La relevancia (todo junto a un lado de una "Y" > todo en el articulo > mayoria > parcial) solo
+  ordena los articulos DENTRO de un mismo sitio. "teclado y raton": primero un articulo con las dos cosas; si no, cada una.
+  Las palabras que coinciden salen en NEGRITA. La voz lee los articulos completos, en el orden de la lista.
+
+COMPORTAMIENTO
+- Al abrir un cajón con foto: al ABRIR la foto dice solo el título; al CERRARLA dice
+  "Te muestro los artículos que hay en el cajón X del armario Y..." (hasta 8 todos;
+  si hay más, 6 y "Los demás los tienes en la lista").
+- Al BUSCAR un articulo, la voz dice TODOS los sitios donde esta (sin limite). El limite ("los demas los
+  tienes en la lista") es SOLO al abrir un cajon o caja concreta: de 1 a 6 los dice todos; si hay mas de 6,
+  dice los 6 primeros (los mismos y en el mismo orden que la lista de la pantalla) y "Los demas los tienes en la lista".
+- La voz dice SIEMPRE primero la UBICACION y luego el articulo: "En ARMARIO AZUL, CAJON 1: CALIBRE GARANT",
+  "En ARMARIO GRIS, CAJON 5, 6 articulos: ..." (igual que la pantalla).
+- Cuando algo está en varios sitios, se enseña y se dice en el ORDEN DE LA PANTALLA PRINCIPAL (el del
+  Excel): Estanteria 1, Estanteria 2, Armario gris, Armario azul, Buhardilla. La voz lee en el MISMO
+  orden que la lista, de arriba abajo. "Ver todo" igual.
+- "nivel", "caja", "cajón", "balda" se buscan como artículo si alguno las lleva;
+  seguidas de número son sitio ("caja 5").
+- Números en letra = en cifra ("llave del diez"); milímetros = MM; tera = TB.
+- Singular y plural cuentan igual (reglas del español). "Dimo" = "DYMO" al buscar y tambien al
+  ESCRIBIRLO en pantalla.
+- "Estantería 2", "armario gris", "ver todo" funcionan dichos o escritos.
+  "Nivel 1" pregunta de qué estantería.
+- Pantalla de inicio: recuadros en el orden del Excel (columna B). Número par: todos
+  iguales; impar: el último sale alargado abajo.
+- iPhone: arranque de UN SOLO COLOR (el gris de la app #E3E5E2) desde que se pulsa el icono: imagenes de
+  arranque, presentacion y app; fundido suave sin chispazo; modo claro fijo. El fondo no cambia nunca.
+  El icono sale enseguida (tambien pintado en el fondo de la pagina) y a los 3 s ya se ven las ubicaciones.
+- iPhone: debajo de "Hola, Manuel" solo pone "Pulsa para ver el contenido" (el microfono es SOLO del ordenador).
+  Ordenador: si la ventana es estrecha, se quita la parte del microfono para que no se salga.
+- iPhone: en "Ver todo", el resumen de los cajones va debajo del título, pequeño y gris.
+- "Ver todo": cada ubicacion en una etiqueta del mismo color que su recuadro de inicio
+  (iPhone y ordenador).
+
+FORMA DE TRABAJAR
+- Hasta terminar el armario gris se prueba sobre todo en el ordenador.
+- Antes de hacer nada que no esté claro, preguntar.
+- Se numeran las versiones igual en iPhone y ordenador.
+
+- Las carpetas se llaman distinto para no confundirlas: "LocalizadorPlus-iPhone" (la que va a la web del iPhone:
+  index.html + 9 imagenes arranque-) y "LocalizadorPlus-ordenador" (instalar.bat). Si el archivo del
+  ordenador se abriera en un movil, se porta como el del iPhone (sin boton ni texto de microfono).
+- En Ajustes, abajo, pone la version: "Localizador Plus V21 · iPhone" / "V21 · Ordenador". (No hubo V13.)
+
+- El zip del iPhone NO lleva carpetas dentro: al descomprimirlo, la carpeta tiene directamente index.html
+  y las 9 imagenes "arranque-". Esa carpeta es la que se subia a la web del iPhone.
+- Cosas SOLO del iPhone: sin boton ni texto de microfono (se usa el del teclado), arranque con icono
+  pintado en el fondo y 3 s, imagenes de arranque grises, resumen de cajones debajo del titulo en "Ver todo".
+- Cosas SOLO del ordenador: boton de microfono, instalador, ventana de Edge, puerto 47622.
+
+- iPhone, cuadro "Tu Excel": boton azul CENTRADO "Cargar Excel:" y debajo "ARTÍCULOS LOCALIZADOR PLUS"
+  en una sola linea (letra estrecha, gruesa y negra; se ajusta sola). Sin "Elige" ni "OneDrive o iCloud".
+  Boton amarillo "Ver todo lo que hay guardado" en UN solo renglon. La pantalla "Falta tu Excel" lleva
+  el mismo boton. Ordenador: como estaba ("Cargar el Excel / Elige ... en tu ordenador").
+- iPhone: cabecera de UNA linea: "Localizador Plus" lo mas grande que quepa, SIN la segunda linea de
+  estado; icono, saludo y recuadros de inicio un poco mas grandes. Ordenador: como estaba.
+- "Tu Excel" (Ajustes) y la pantalla "Falta tu Excel" van CENTRADOS (iPhone y ordenador).
+- V18: ORDENADOR igual que el iPhone en: boton "Cargar Excel:" + "ARTÍCULOS LOCALIZADOR PLUS" centrado
+  (en rojo cuando falta, en azul clarito cuando ya hay), y SIN la segunda linea de la cabecera (lo del
+  microfono ya lo dice debajo de "Hola, Manuel"). En las DOS: "Ver todo lo que hay guardado" CENTRADO
+  en todos los botones amarillos. El nombre del Excel toma el color del boton (blanco en rojo).
+- V19: SOLO ORDENADOR, en la pantalla de RESULTADOS de una busqueda, el texto del boton amarillo de
+  abajo va a la IZQUIERDA; en las demas pantallas (y siempre en el iPhone), centrado.
+- iPhone (V19 rehecha): pantalla "Falta tu Excel" con "Para buscar tus cosas, carga el Excel:" y debajo
+  "ARTÍCULOS LOCALIZADOR PLUS", cada frase en UNA linea (la letra se ajusta), SIN lo de OneDrive/iCloud,
+  y el boton en ROJO mientras falte el Excel (en Ajustes pasa a azul al cargarlo).
+- iPhone (V19, tercera): el nombre "ARTÍCULOS LOCALIZADOR PLUS" de los botones de cargar (azul y rojo)
+  va en letra Poppins (incrustada en la app), algo mas pequeña; botones centrados igual. El amarillo de
+  Ajustes se mide por su texto y se reajusta al abrir Ajustes: queda centrado y sin salirse.
+- VOZ (V20): al HABLAR pone las tildes que faltan en el Excel (JESUS->JESÚS, MOVIL->MÓVIL, CAJON->CAJÓN...)
+  con una lista de ~190 palabras; la pantalla y el Excel no cambian. Si una palabra se pronuncia mal,
+  se añade a la lista TILDES_VOZ (o se escribe con tilde en el Excel).
+- RECUENTOS (V20): una sola palabra, "articulos" (singular solo con 1), en pantalla y en voz, en todos los sitios.
+  Voz al abrir cualquier sitio: "En [sitio] hay N articulos: ..." / "...todavia no hay articulos apuntados".
+  La voz recibe los numeros en palabras y concordados (un, veintiun, cuarenta y un articulos; una foto).
+  Sitios en la voz con nombre natural: "la caja 30 de la estantería 2", "el cajón 1 del armario azul".
+- iPhone (V21): SIN casilla de zoom. Pantalla principal: en iPhone anchos (mas de 380 puntos) un 20 % mas
+  grande; en estrechos (como el iPhone de Manuel con "Zoom de pantalla: Texto mas grande" = 320 x 693) igual
+  que la V20, pero "Ver todo lo que hay guardado" SIEMPRE en una linea (la letra se ajusta), con lo que la
+  tarjeta de arriba gana alto.
+- iPhone (V21): "Falta tu Excel", "Tu Excel" al cargar y "Tu Excel" desde Ajustes son LA MISMA ventana:
+  mismo ancho, posicion de arriba y esquinas que la tarjeta principal; llega hasta encima de la rayita del
+  iPhone (respeta la zona segura y las esquinas de la pantalla). Su contenido se amplia lo maximo que cabe
+  (hasta 1,35) y SIEMPRE se ve entero sin deslizar, "Volver" incluido. No se quita ninguna silaba.
+  En "Falta tu Excel": arriba el boton rojo y abajo la casilla de la voz; sin "Ver todo", "Volver" ni buscador.
+- iPhone (V21): "Falta tu Excel" aparece DESPUES del icono de arranque (no lo tapa; la portada de la app
+  enseña el icono) y las ventanas aparecen con un fundido suave de medio segundo, sin golpe.
+- iPhone (V21): la ventana NO se mueve al cargar el Excel (habia un sistema antiguo que la bajaba 42 puntos;
+  ahora solo hay una forma de colocarla). Fundidos suaves: al cambiar de pantalla, al pasar de "Falta tu Excel"
+  a "Tu Excel" y al pulsar "Volver".
+- iPhone (V21): se dice y se escribe "ubicación/ubicaciones" en vez de "sitio/sitios" ("Lo tengo en tres
+  ubicaciones", femenino: "veintiuna ubicaciones"). "Todo lo que hay": "Pulsa una ubicación para ver su contenido."
+- iPhone (V21): casilla "Activar modo zoom" SOLO en "Tu Excel" (encima de la voz; en "Falta tu Excel" no se ve
+  pero guarda su hueco: el boton rojo queda EXACTAMENTE donde el azul). Se recuerda (locplus-pellizco).
+  * Desactivada (por defecto): no se puede ampliar con dos dedos en NINGUN sitio, ni en las fotos.
+  * Activada: en todas las pantallas (principal, ubicaciones, cajas, busquedas, Ver todo) se amplia con dos
+    dedos como una lupa (hasta x3) y al SOLTAR vuelve sola; no mueve nada ni abre nada sin querer.
+  * Activada, en las FOTOS: la foto se queda ampliada (hasta x5), se mueve con un dedo, tocarla o deslizar no
+    cambia de foto; la X y las flechas siempre se pueden pulsar; vuelve a su tamaño al cerrar o al pasar a otra.
+- FOTOS (V21, iPhone y ordenador): la X es la UNICA forma de cerrar. Una foto: abajo sin texto y tocarla no hace
+  nada. Varias: "1 de 2. Pulsa la foto para ver la siguiente" (en la ultima solo "2 de 2" y la flecha apagada).
+- iPhone (V21): la ventana del Excel mide SIEMPRE lo mismo que la tarjeta principal, se abra desde donde se abra
+  (se apunta la medida de la tarjeta y se reutiliza). El fondo oscuro de detras es igual en Falta tu Excel, al
+  cargar y al volver a entrar, y llega hasta abajo del todo.
+- FOTOS (V21): con UNA sola foto no salen las flechas (su hueco se respeta). Las flechas solo pasan de foto: el
+  doble toque ya no hace zoom (touch-action:manipulation y user-scalable=no). Solo se amplia con DOS DEDOS.
+- V21 (iPhone y ordenador): cada foto de cajon se ajusta al hueco entre el titulo y las flechas por ancho y alto
+  (en el ordenador las del armario azul ya no se cortan). Marco azul FIJO en "Cargar Excel" (antes era la marca de
+  seleccion y desaparecia). Cabecera negra fija arriba en todas las pantallas. Con la ventana del Excel abierta,
+  la pantalla de detras queda vacia y quieta.
+- iPhone (V21): el zoom de dos dedos en la foto amplia JUSTO el punto que hay entre los dedos; con la foto
+  ampliada, DOBLE TOQUE la devuelve a su tamaño.
+- iPhone (V21): al tocar "¿Que buscas?" en CUALQUIER pantalla pasa como en la principal: se esconde la lista de
+  detras y el boton verde "Volver" (para salir esta el tic del iPhone). Al buscar salen los resultados; al
+  salir sin buscar vuelve la pantalla con su boton verde. En el ordenador no se aplica (no hay teclado en pantalla).
+- Con la ventana del Excel abierta la cabecera sigue arriba y, al cerrar, la pantalla vuelve a donde estaba.
+- V21 (iPhone y ordenador): "Volver" va a la pantalla ANTERIOR. Cajon/caja abierto desde la lista de un armario o
+  estanteria -> Volver -> esa lista -> Volver -> principal. Desde "Ver todo" -> Volver -> Ver todo (mismo sitio).
+- iPhone (V21): con la ventana del Excel abierta, la PROPIA pantalla se pone gris oscuro (#6C6E6F) de arriba abajo,
+  franja de la rayita incluida, y la cabecera se oscurece con el mismo tono. (El velo del iPhone no llegaba abajo.)
+- iPhone (V21): "Falta tu Excel" igual que "Tu Excel": boton rojo con el mismo marco que el azul (rojo oscuro
+  #8E1C1B) y las casillas "Activar modo zoom" y "Claudia habla en voz alta" en el MISMO sitio y tamaño.
+  Las dos casillas vienen DESACTIVADAS hasta que el usuario las marque (la voz solo se activa si se marco).
+- V21 (iPhone y ordenador): TRES casillas en la ventana del Excel (en "Falta tu Excel" y en "Tu Excel", mismo sitio):
+  "Activar modo zoom", "Decir comentario en fotos" y "Voz en ubicaciones y artículos". Desaparece "Claudia habla en
+  voz alta". Las tres vienen DESACTIVADAS. "Voz en ubicaciones y artículos" controla toda la voz (estanterias,
+  armarios, cajas/cajones y busquedas); "Decir comentario en fotos" dice el comentario de encima de la foto.
+  Se mantiene el boton amarillo en la ventana (opcion A).
+- V21: al abrir UN cajon (a mano, buscandolo o desde Ver todo) sale PRIMERO la lista de articulos; la foto solo con
+  "Ver la foto". Pedir VARIOS cajones a la vez sigue abriendo las fotos con flechas.
+- V21: la voz espera un instante (0,12 s) tras cortar la anterior (el iPhone a veces se tragaba la frase).
+- Ordenador V21: zoom de fotos con la rueda del raton/panel donde esta el puntero, arrastrar para mover y doble clic
+  para volver; "ubicación/ubicaciones" en vez de "sitio/sitios" como en el iPhone.
+- SIMULAR SIEMPRE con el tamaño del iPhone de Manuel: 320 x 693 (iPhone 12 con Zoom de pantalla "Texto mas
+  grande"), con zona segura arriba y abajo.
+- AL SACAR VERSION: revisar pantalla por pantalla en LAS DOS versiones (inicio, Falta tu Excel, Ajustes
+  sin Excel y con Excel, una busqueda) y aplicar a las dos todo lo que no sea exclusivo de una.
+- Antes de sacar una version, ENSEÑAR CAPTURAS de lo que cambia y esperar el visto bueno.
+
+VERSIÓN ACTUAL: V21 (iPhone y ordenador). La V21 de ordenador es la V20 de ordenador con solo el numero cambiado.
+  PENDIENTE: llevar al ordenador los cambios del iPhone que se quieran (ventanas, Falta tu Excel, fundidos...).

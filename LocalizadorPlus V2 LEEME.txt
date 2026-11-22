@@ -1,0 +1,46 @@
+LOCALIZADOR PLUS V1 - Version ordenador
+=======================================
+
+Es la version nueva de Localizador Plus (la numeracion vuelve a empezar: V1).
+Sustituye a la V21 en el ordenador: se instala en su mismo sitio, con el
+mismo icono "Localizador Plus", y conserva el Excel que ya tenias cargado.
+El Localizador v50 no se toca y sigue funcionando con su icono.
+
+EL EXCEL: "ARTICULOS LOCALIZADOR PLUS"
+--------------------------------------
+- Estanterias y buhardilla: los articulos van en la D y la E combinadas.
+- Armario gris y armario azul (cajones): la D es la FOTO del cajon, el
+  comentario de la celda del cajon es el TITULO de la foto y los
+  articulos van en la columna E.
+- Solo se busca en los articulos (el titulo no se usa para buscar).
+- Cada articulo va entre comas. La "Y" no separa: es parte del articulo.
+
+QUE HAY EN ESTA CARPETA
+-----------------------
+  LocalizadorPlus V2 instalar.bat    El instalador. Es lo unico que tienes que abrir.
+  LocalizadorPlus V2.html            El programa.
+  LocalizadorPlus V2.py              El arranque: abre el programa en su ventana.
+  LocalizadorPlus V2.ico             El icono.
+  LocalizadorPlus V2 HISTORIAL.txt   Todo lo decidido (para seguir en un chat nuevo).
+  LocalizadorPlus V2 LEEME.txt       Estas instrucciones.
+Esta carpeta es SOLO para el ordenador: NO se sube a GitHub.
+
+COMO INSTALARLO O ACTUALIZARLO
+------------------------------
+1. Descomprime la carpeta entera (boton derecho, "Extraer todo").
+2. Entra en la carpeta y haz doble clic en "LocalizadorPlus V2 instalar.bat".
+3. Si Windows avisa con una pantalla azul ("Windows protegio su PC"),
+   pulsa "Mas informacion" y luego "Ejecutar de todas formas".
+4. Tarda 1 o 2 minutos. Al terminar queda el icono "Localizador Plus"
+   en el Escritorio y se abre el programa solo.
+Al actualizar no se pierde el Excel cargado.
+Si habias instalado la prueba "Localizador Plus +", el instalador la quita
+(su icono y su carpeta): ya no hace falta.
+En Ajustes, abajo del todo, pone la version (Localizador Plus V1 - Ordenador).
+
+HABLARLE
+--------
+Pulsa el microfono, di lo que buscas, y si le dices "adios" se despide
+y cierra el programa.
+
+No depende de Claude ni de internet para funcionar.
