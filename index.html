@@ -44,7 +44,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-14-V2-8";
+(function () { const ENTREGA = "2026-11-22-V2-9";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -369,6 +369,8 @@ html, body, button, #visor{touch-action:manipulation}
 .visor-pie{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#BDBDBD;font-size:15px}
 .visor-pie button{background:#2A2A2A;border:0;color:#fff;border-radius:12px;width:56px;height:48px;font-size:26px;cursor:pointer}
 .visor-pie button:disabled{opacity:.3}
+/* V2-9: TODOS los botones se atenuan igual mientras el dedo esta encima (la marca "pulsado" la pone el guion de abajo). Sin fundido. */
+button.pulsado:not(:disabled){opacity:.6}
 .oculto{display:none!important}
 /* Mapa del garaje en la pantalla de inicio */
 .mapa{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 4px}
@@ -3718,6 +3720,41 @@ function anteriorFoto() { if (indiceVisor > 0) { indiceVisor--; pintarFoto(); } 
 $("vCerrar").addEventListener("click", cerrarFotos);
 $("vSiguiente").addEventListener("click", siguienteFoto);
 $("vAnterior").addEventListener("click", anteriorFoto);
+// V2-9 (22/11/2026): al poner el dedo sobre CUALQUIER boton, se atenua (marca "pulsado", opacidad .6) y al levantar
+// el dedo vuelve a su color. Se hace aqui, en un solo sitio, para que todos los botones respondan igual (en el iPhone
+// el ":active" no sirve para todos: "Ver todo" anula el toque). Solo pone y quita una marca: no toca lo que hace cada boton.
+// Si el dedo se mueve (para desplazar la lista) o hay dos dedos, se quita enseguida. Si el boton se esta yendo con
+// un fundido (pantalla que sale, ventana que se cierra), se queda atenuado hasta que desaparece, para que no "vuelva" a medias.
+(() => {
+  let el = null, x0 = 0, y0 = 0, turno = 0;
+  const quitar = () => { turno++; if (el) { el.classList.remove("pulsado"); el = null; } };
+  const yendose = e => !!(e.closest && e.closest(".saliendo, .cerrando"));
+  addEventListener("touchstart", e => {
+    quitar();
+    if (!e.touches || e.touches.length !== 1) return;
+    const b = e.target && e.target.closest ? e.target.closest("button") : null;
+    if (!b || b.disabled) return;
+    el = b; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    el.classList.add("pulsado");
+  }, { passive: true, capture: true });
+  addEventListener("touchmove", e => {
+    if (!el || !e.touches || !e.touches.length) return;
+    const t = e.touches[0];
+    if (e.touches.length > 1 || Math.abs(t.clientX - x0) > 10 || Math.abs(t.clientY - y0) > 10) quitar();
+  }, { passive: true, capture: true });
+  addEventListener("touchcancel", quitar, { passive: true, capture: true });
+  addEventListener("scroll", () => { if (el) quitar(); }, { passive: true, capture: true });
+  addEventListener("touchend", () => {
+    if (!el) return;
+    const b = el, mio = ++turno;
+    const mirar = () => {
+      if (mio !== turno) return;
+      if (b.isConnected && yendose(b)) { requestAnimationFrame(mirar); return; }
+      b.classList.remove("pulsado"); if (el === b) el = null;
+    };
+    requestAnimationFrame(() => requestAnimationFrame(mirar));
+  }, { passive: true, capture: true });
+})();
 // Si has AMPLIADO la foto (con dos dedos), al soltar no se cierra ni
 // se pasa a la siguiente: se queda ampliada hasta que pulses la X.
 // Sin ampliar, tocar la foto y deslizar funcionan igual que siempre.
