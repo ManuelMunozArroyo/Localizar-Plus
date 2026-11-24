@@ -688,13 +688,21 @@ html.arranque body > *:not(#presentacion){visibility:hidden !important}
    pintar cualquier pagina; con el arranque gris se veia gris -> blanco -> gris (parpadeo del fondo). En blanco, ese
    paso no se ve en ningun caso (Safari, instalada con Excel, instalada sin Excel). El gris claro vuelve al entrar la app. */
 html.arranque body{background:#FFFFFF !important}
-/* V2-10 (24/11/2026): al irse el icono, la pantalla blanca (con el icono) se DESVANECE en .45 s y deja ver poco a poco la
-   pantalla principal ENTERA, que ya esta puesta debajo desde el primer fotograma (cabecera, franjas, fondo y contenido a la
-   vez). La pantalla blanca tapa la pantalla entera, incluidas las franjas, asi todo aparece junto. El color de fondo de la
-   pagina (que el iPhone usa en la franja de la hora) pasa de blanco a su color con el mismo tiempo y la misma curva. */
+/* V2-10 (24/11/2026). En el iPhone (iOS 26/27) la barra de la hora la pinta el SISTEMA: mira el elemento fijo o pegado
+   (fixed/sticky, de casi todo el ancho, mas de 10 px de alto, opacidad 0,1 o mas) que hay 4 px por debajo del borde de
+   arriba y copia su color de fondo; si no hay ninguno, usa el fondo de la pagina. Cuando copia un elemento fijo pone
+   ademas una linea separadora debajo de la hora. Y no funde: cambia de un salto (con un fundido, al bajar de 0,1).
+   1) RAYITA: mientras esta el icono, la pantalla blanca empieza 12 px por debajo del borde (--pres-arriba); esos 12 px
+      son el fondo blanco de la pagina, asi que se ve igual, pero el iPhone ya no encuentra un elemento fijo arriba y usa
+      el fondo de la pagina (blanco) sin linea. El icono se compensa con esos mismos px: queda EXACTAMENTE donde estaba.
+   2) TODO A LA VEZ: al irse el icono, la pantalla blanca pasa a empezar justo debajo de la cabecera: el iPhone ve ya la
+      cabecera y la barra de la hora cambia en ese mismo instante que aparece la cabecera (como en la V2-9), y a la vez
+      el resto de la pantalla empieza a aparecer poco a poco (la pantalla blanca se desvanece en .45 s). */
+#presentacion{top:var(--pres-arriba, 12px) !important}
+#presentacion img{top:calc(var(--icono-top, calc(108.28vw - 59px)) - var(--pres-arriba, 12px))}
+html.solo-vista #presentacion img{top:calc(50% - 59px - var(--pres-arriba, 12px))}
 #presentacion.yendose{animation:salidaPresentacion .45s ease-in-out both !important;pointer-events:none}
 @keyframes salidaPresentacion{from{opacity:1}to{opacity:0}}
-html.fundiendo-arranque, html.fundiendo-arranque body{transition:background-color .45s ease-in-out !important}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
 </style>
 </head>
@@ -3961,11 +3969,7 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       // mientras el icono aun tapa la pantalla. Antes, al quitarse el icono, se veia pasar el fondo de
       // claro a gris oscuro en 0,3 s (se notaba sobre todo la primera vez, con la pantalla roja).
       const h = document.documentElement;
-      // V2-10: con la pantalla principal, la pantalla blanca se desvanece (ver abajo) y el color de fondo de la pagina
-      // pasa de blanco a su color a la vez. Con la ventana roja ("Falta tu Excel") se queda EXACTAMENTE como en la V2-9:
-      // esa ventana va siempre por encima de todo y, al desvanecerse el blanco, se veria el icono a traves de ella.
-      const suave = !document.body.classList.contains("en-falta");
-      h.classList.add(suave ? "fundiendo-arranque" : "sin-fundido-fondo");
+      h.classList.add("sin-fundido-fondo");
       // 08/11/2026: mientras se va el icono, las franjas siguen claras; cambian de golpe justo cuando
       // el icono termina de irse, a la vez que aparece la pantalla, no antes ni despues.
       h.classList.add("arranque");
@@ -3982,23 +3986,30 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
         if (dd) dd.classList.remove("esperando-arranque"); } catch (e) {}
       // 08/11/2026: la pantalla de arranque se quita DE UNA VEZ, sin fundido, y en ese mismo fotograma
       // las franjas de arriba y abajo toman su color definitivo: todo cambia a la vez.
-      // V2-10 (24/11/2026): debajo se pone la pantalla principal ENTERA en este mismo fotograma (como antes), pero la
-      // pantalla blanca con el icono ya no se quita de golpe: se desvanece en .45 s y se quita al terminar.
-      if (!suave) {
-        // como en la V2-9: todo de una vez
-        h.classList.remove("arranque"); pres.remove(); blanco();
-        try { const t = document.getElementById("colorTema"); if (t) t.setAttribute("content", "#1E2530"); } catch (e) {}
-        requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
-        return;
+      // V2-10 (24/11/2026): con la pantalla principal, la cabecera (y con ella la franja de la hora) aparece en este
+      // fotograma, como antes, y el resto aparece poco a poco: la pantalla blanca pasa a empezar justo debajo de la
+      // cabecera y se desvanece. Con la ventana roja ("Falta tu Excel") todo sigue EXACTAMENTE como en la V2-9: esa
+      // ventana va siempre por encima de todo y, al desvanecerse el blanco, se veria el icono a traves de ella.
+      let suave = !document.body.classList.contains("en-falta"), alto = 0;
+      if (suave) {
+        try { const cab = document.querySelector("header"), r = cab ? cab.getBoundingClientRect() : null;
+          alto = r ? Math.round(r.bottom) : 0; } catch (e) { alto = 0; }
+        if (!(alto > 0 && alto < innerHeight / 3)) suave = false;   // si no se puede medir la cabecera: como antes
       }
-      pres.classList.add("yendose");
-      h.classList.remove("arranque"); blanco();
+      if (suave) {
+        pres.style.setProperty("--pres-arriba", alto + "px");
+        pres.classList.add("yendose");
+        h.classList.remove("arranque"); blanco();
+        let ido = false;
+        const fin = () => { if (ido) return; ido = true; pres.remove(); };
+        pres.addEventListener("animationend", e => { if (e.animationName === "salidaPresentacion") fin(); });
+        setTimeout(fin, 1500);   // por si el aviso de fin no llega: se quita igual (ya esta invisible)
+      } else {
+        h.classList.remove("arranque"); pres.remove(); blanco();
+      }
       // 08/11/2026: en ese mismo fotograma, el color de las barras del iPhone pasa al azul de la cabecera
       try { const t = document.getElementById("colorTema"); if (t) t.setAttribute("content", "#1E2530"); } catch (e) {}
-      let ido = false;
-      const fin = () => { if (ido) return; ido = true; pres.remove(); h.classList.remove("fundiendo-arranque"); };
-      pres.addEventListener("animationend", e => { if (e.animationName === "salidaPresentacion") fin(); });
-      setTimeout(fin, 1500);   // por si el aviso de fin no llega: se quita igual (ya esta invisible)
+      requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
     }, 120)));
   };
   const aparecer = () => {
