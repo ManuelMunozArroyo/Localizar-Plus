@@ -44,7 +44,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-22-V2-9";
+(function () { const ENTREGA = "2026-11-24-V2-10";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -688,6 +688,13 @@ html.arranque body > *:not(#presentacion){visibility:hidden !important}
    pintar cualquier pagina; con el arranque gris se veia gris -> blanco -> gris (parpadeo del fondo). En blanco, ese
    paso no se ve en ningun caso (Safari, instalada con Excel, instalada sin Excel). El gris claro vuelve al entrar la app. */
 html.arranque body{background:#FFFFFF !important}
+/* V2-10 (24/11/2026): al irse el icono, la pantalla blanca (con el icono) se DESVANECE en .45 s y deja ver poco a poco la
+   pantalla principal ENTERA, que ya esta puesta debajo desde el primer fotograma (cabecera, franjas, fondo y contenido a la
+   vez). La pantalla blanca tapa la pantalla entera, incluidas las franjas, asi todo aparece junto. El color de fondo de la
+   pagina (que el iPhone usa en la franja de la hora) pasa de blanco a su color con el mismo tiempo y la misma curva. */
+#presentacion.yendose{animation:salidaPresentacion .45s ease-in-out both !important;pointer-events:none}
+@keyframes salidaPresentacion{from{opacity:1}to{opacity:0}}
+html.fundiendo-arranque, html.fundiendo-arranque body{transition:background-color .45s ease-in-out !important}
 @keyframes presentacionSiTarda{to{opacity:0;visibility:hidden}}
 </style>
 </head>
@@ -2781,7 +2788,7 @@ function mostrarVentanaFalta() {
   // pero invisible (clase "esperando-arranque"); se hace visible, sin animacion, en el mismo momento en que
   // el icono empieza a irse. Asi no hay ni pantalla vacia ni ventana que "aparezca" despues.
   const pres = document.getElementById("presentacion");
-  const conIcono = !!(pres && !pres.classList.contains("fuera"));
+  const conIcono = !!(pres && !pres.classList.contains("fuera") && !pres.classList.contains("yendose"));
   d.dataset.modo = "falta";
   // las casillas quedan en el MISMO sitio que en "Tu Excel" (debajo del hueco de "Ver todo")
   { const amarillo = $("verTodoAjustes"), zoom = d.querySelector(".dlg > .interruptor-zoom"), fo = d.querySelector(".dlg > .interruptor-fotos"), voz = d.querySelector(".dlg > .interruptor-voz");
@@ -3954,7 +3961,11 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
       // mientras el icono aun tapa la pantalla. Antes, al quitarse el icono, se veia pasar el fondo de
       // claro a gris oscuro en 0,3 s (se notaba sobre todo la primera vez, con la pantalla roja).
       const h = document.documentElement;
-      h.classList.add("sin-fundido-fondo");
+      // V2-10: con la pantalla principal, la pantalla blanca se desvanece (ver abajo) y el color de fondo de la pagina
+      // pasa de blanco a su color a la vez. Con la ventana roja ("Falta tu Excel") se queda EXACTAMENTE como en la V2-9:
+      // esa ventana va siempre por encima de todo y, al desvanecerse el blanco, se veria el icono a traves de ella.
+      const suave = !document.body.classList.contains("en-falta");
+      h.classList.add(suave ? "fundiendo-arranque" : "sin-fundido-fondo");
       // 08/11/2026: mientras se va el icono, las franjas siguen claras; cambian de golpe justo cuando
       // el icono termina de irse, a la vez que aparece la pantalla, no antes ni despues.
       h.classList.add("arranque");
@@ -3971,10 +3982,23 @@ setTimeout(() => { document.documentElement.classList.remove("arrancando", "arra
         if (dd) dd.classList.remove("esperando-arranque"); } catch (e) {}
       // 08/11/2026: la pantalla de arranque se quita DE UNA VEZ, sin fundido, y en ese mismo fotograma
       // las franjas de arriba y abajo toman su color definitivo: todo cambia a la vez.
-      h.classList.remove("arranque"); pres.remove(); blanco();
+      // V2-10 (24/11/2026): debajo se pone la pantalla principal ENTERA en este mismo fotograma (como antes), pero la
+      // pantalla blanca con el icono ya no se quita de golpe: se desvanece en .45 s y se quita al terminar.
+      if (!suave) {
+        // como en la V2-9: todo de una vez
+        h.classList.remove("arranque"); pres.remove(); blanco();
+        try { const t = document.getElementById("colorTema"); if (t) t.setAttribute("content", "#1E2530"); } catch (e) {}
+        requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
+        return;
+      }
+      pres.classList.add("yendose");
+      h.classList.remove("arranque"); blanco();
       // 08/11/2026: en ese mismo fotograma, el color de las barras del iPhone pasa al azul de la cabecera
       try { const t = document.getElementById("colorTema"); if (t) t.setAttribute("content", "#1E2530"); } catch (e) {}
-      requestAnimationFrame(() => requestAnimationFrame(() => h.classList.remove("sin-fundido-fondo")));
+      let ido = false;
+      const fin = () => { if (ido) return; ido = true; pres.remove(); h.classList.remove("fundiendo-arranque"); };
+      pres.addEventListener("animationend", e => { if (e.animationName === "salidaPresentacion") fin(); });
+      setTimeout(fin, 1500);   // por si el aviso de fin no llega: se quita igual (ya esta invisible)
     }, 120)));
   };
   const aparecer = () => {
