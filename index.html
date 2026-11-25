@@ -235,6 +235,15 @@ html.ventana-abierta main, html.ventana-abierta .abajo{visibility:hidden}
    saludo y el texto, y el boton amarillo baja un poco. Asi se ve entero
    con el teclado abierto. Al salir del cuadro, todo vuelve como estaba. */
 .bienvenida.compacta{display:none}
+/* V2-12: la tarjeta se desvanece al tocar el buscador (imagen de la tarjeta que se funde) y reaparece con fundido al cerrar el teclado */
+::view-transition-group(root){animation:none}
+::view-transition-old(root), ::view-transition-new(root){animation:none}
+::view-transition-group(*){animation-duration:.2s}
+::view-transition-old(*){animation:tarjetaFuera .2s ease-out both}
+::view-transition-new(*){animation:none;opacity:0}
+@keyframes tarjetaFuera{from{opacity:1}to{opacity:0}}
+.bienvenida.reaparece{animation:tarjetaDentro .22s ease-out both}
+@keyframes tarjetaDentro{from{opacity:0}to{opacity:1}}
 .atajo-todo{max-width:640px;margin:0 auto 10px}
 .atajo-todo .boton{margin:0}
 .atajo-todo.oculto{display:none}
@@ -569,14 +578,6 @@ dialog#ajustes[open]::backdrop{animation:aparecerFondo .3s ease-out}
 main.saliendo, #pararVoz.saliendo{opacity:0;transition:opacity .14s ease-in;pointer-events:none}
 #pararVoz{animation:aparecerVentana .22s ease-out}
 main, .abajo{transition:opacity .25s ease-out}
-/* V2-12 (25/11/2026): al tocar "¿Que buscas?" en la pantalla principal, la tarjeta "Hola, Manuel" se desvanece y la barra
-   amarilla con el buscador sube SUAVE hasta donde empezaba la tarjeta, ANTES de que llegue el teclado: asi el teclado ya no
-   la tapa y el iPhone no tiene que empujar la pantalla (antes: la tarjeta desaparecia de golpe, la cabecera se iba y la
-   barra subia de mas y rebotaba). Al cerrar el teclado sin buscar, vuelve todo a su sitio igual de suave. */
-.abajo{transition:opacity .25s ease-out, translate .22s cubic-bezier(.25,.8,.3,1)}
-body.buscando-arriba .abajo{translate:0 var(--subir-barra, 0px)}
-.bienvenida{transition:opacity .22s ease-out}
-body.buscando-arriba .bienvenida{opacity:0;pointer-events:none}
 html.ventana-abierta:not(.en-falta) main, html.ventana-abierta:not(.en-falta) .abajo{opacity:0;transition:opacity .3s ease-out, visibility 0s linear .3s}
 #instrucciones[open]{animation:aparecerVentana .3s ease-out}
 #instrucciones.cerrando{opacity:0;transition:opacity .25s ease-in}
@@ -761,7 +762,7 @@ html.solo-vista #presentacion img{top:calc(50% - 59px - var(--pres-arriba, 12px)
     <label class="interruptor interruptor-zoom"><span>Activar modo zoom</span><input type="checkbox" id="pellizco"></label>
     <label class="interruptor interruptor-2 interruptor-fotos"><span>Decir comentario en fotos</span><input type="checkbox" id="vozFotos"></label>
     <label class="interruptor interruptor-2 interruptor-voz"><span>Voz en ubicaciones y artículos</span><input type="checkbox" id="conVoz"></label>
-    <p class="suave version-app" style="text-align:center;font-size:13px;margin:12px 0 0">Localizador Plus V2 · iPhone</p>
+    <p class="suave version-app" style="text-align:center;font-size:13px;margin:12px 0 0">Localizador Plus V2.12 · iPhone</p>
     <div class="fila-volver">
       <button class="boton verde" id="cerrarAjustes">Volver</button>
       <button class="boton burdeos" id="seguirInstr" type="button">Seguir</button>
@@ -2776,22 +2777,6 @@ let pasandoPantalla = false, siguientePantalla = null;
 // arriba y luego saltaba). Ahora: pantalla nueva -> arriba del todo; volver a una lista -> directamente donde estabas
 // (fijarScroll); si la pantalla no cambia -> se queda donde estaba.
 let scrollFijado = false, pasoY = null;
-// V2-12: subir / bajar la barra del buscador en la pantalla principal (ver el estilo "buscando-arriba")
-function subirBuscadorArriba() {
-  const b = document.body;
-  if (b.classList.contains("buscando-arriba")) return true;
-  if (!b.classList.contains("en-inicio")) return false;
-  const barra = document.querySelector(".abajo"), tarj = document.querySelector(".bienvenida:not(.compacta)");
-  if (!barra || !tarj || !barra.offsetHeight) return false;
-  const rb = barra.getBoundingClientRect(), rt = tarj.getBoundingClientRect();
-  const z = (rb.height / barra.offsetHeight) || 1;
-  const px = Math.round((rb.top - rt.top) / z);
-  if (!(px > 20 && px < innerHeight)) return false;
-  b.style.setProperty("--subir-barra", -px + "px");
-  b.classList.add("buscando-arriba");
-  return true;
-}
-function quitarBuscadorArriba() { document.body.classList.remove("buscando-arriba"); }
 // V2-12: donde estaba la lista que se deja (aunque ya se haya subido arriba para el cambio en dos tiempos)
 function posLista() { return pasoY !== null ? pasoY : scrollY; }
 function fijarScroll(y) { scrollFijado = true; window.scrollTo(0, Math.max(0, y || 0)); }
@@ -2813,7 +2798,6 @@ function pasarSuave(accion, conVolver, encadenar) {
     m.classList.remove("saliendo"); v.classList.remove("saliendo"); m.style.visibility = "";
     scrollFijado = false; pasoY = yAntes;
     try { accion(); if (luego) luego(); } finally { pasoY = null; }
-    if (!document.querySelector(".bienvenida")) quitarBuscadorArriba();   // V2-12: si se busco desde la principal, la barra baja suave a su sitio con la pantalla nueva
     // si no ha cambiado de pantalla, lo que habia vuelve a aparecer suave
     if (antes && r.firstChild === antes) { if (!scrollFijado && scrollY !== yAntes) window.scrollTo(0, yAntes); r.classList.remove("fundido"); void r.offsetWidth; r.classList.add("fundido"); }
     else if (!scrollFijado) window.scrollTo(0, 0);   // V2-11: pantalla nueva, arriba, ya en este instante (siempre: el iPhone puede ir un paso por detras)
@@ -3425,19 +3409,42 @@ function activarCampoEntrada(campo) {
   // despues, con la pantalla desplazada hacia abajo, el cuadro y el boton
   // amarillo se quedaban escondidos detras del teclado.
   const restaurarInicio = () => {
-    quitarBuscadorArriba();   // V2-12
+    document.querySelectorAll(".bienvenida.compacta").forEach(b => { b.classList.remove("reaparece"); void b.offsetWidth; b.classList.add("reaparece"); });   // V2-12
     document.querySelectorAll(".bienvenida").forEach(b => b.classList.remove("compacta"));
     modoInicio();
+  };
+  // V2-12 (25/11/2026): la tarjeta se quita en el MISMO momento que antes (para que el teclado se comporte exactamente
+  // igual), pero en vez de desaparecer de golpe se desvanece: el iPhone guarda una imagen de la tarjeta tal como estaba y la
+  // funde en .2 s mientras por debajo ya esta la pantalla sin tarjeta ("transicion de vista" del navegador, solo para la
+  // tarjeta). Si el iPhone no sabe hacerlo, se hace como antes. Al volver la tarjeta (teclado cerrado sin buscar), aparece
+  // tambien con un fundido.
+  let tarjetaYendose = false;
+  const conFundidoTarjeta = (tarjetas, cambiar) => {
+    const reducir = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || reducir) { cambiar(); return; }
+    let hecho = false;
+    const una = () => { if (!hecho) { hecho = true; cambiar(); } };
+    try {
+      tarjetas.forEach((b, n) => { b.style.viewTransitionName = "tarjeta-inicio-" + n; });
+      const tr = document.startViewTransition(una);
+      const limpiar = () => tarjetas.forEach(b => { b.style.viewTransitionName = ""; });
+      tr.finished.then(limpiar, limpiar);
+      tr.updateCallbackDone.catch(una);
+      setTimeout(una, 80);    // por si el iPhone tarda en hacer el cambio: que la tarjeta se quite siempre antes del teclado
+    } catch (e) { tarjetas.forEach(b => { b.style.viewTransitionName = ""; }); una(); }
   };
   const compactarInicio = () => {
     const inicio = document.querySelectorAll(".bienvenida");
     if (!inicio.length) return false;
-    // V2-12: en la pantalla principal ya no se quita la tarjeta de golpe: se desvanece y la barra sube suave (si se puede medir)
-    if (subirBuscadorArriba()) return true;
+    if (tarjetaYendose) return true;   // V2-12: ya se esta quitando (el dedo avisa dos veces: toque y puntero)
     const yaEstaba = [...inicio].every(b => b.classList.contains("compacta"));
-    inicio.forEach(b => b.classList.add("compacta"));
-    modoInicio();
-    if (!yaEstaba) window.scrollTo(0, 0);
+    const quitar = () => {
+      tarjetaYendose = false;
+      inicio.forEach(b => b.classList.add("compacta"));
+      modoInicio();
+      if (!yaEstaba) window.scrollTo(0, 0);
+    };
+    if (yaEstaba) quitar(); else { tarjetaYendose = true; conFundidoTarjeta([...inicio], quitar); }
     return true;
   };
   const alPonerElDedo = () => {
@@ -3447,19 +3454,6 @@ function activarCampoEntrada(campo) {
   };
   campo.addEventListener("touchstart", alPonerElDedo, { passive: true });
   campo.addEventListener("pointerdown", alPonerElDedo);
-  // V2-12: como el cuadro sube mientras tienes el dedo puesto, al levantarlo puede que ya no este debajo del dedo:
-  // si fue un toque (el dedo casi no se movio) y el cuadro aun no tiene el cursor, se le da aqui (el iPhone abre el teclado).
-  (() => {
-    let x0 = null, y0 = null, movido = false;
-    campo.addEventListener("touchstart", e => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; movido = false; }, { passive: true });
-    campo.addEventListener("touchmove", e => { const t = e.touches[0]; if (x0 !== null && (Math.abs(t.clientX - x0) > 10 || Math.abs(t.clientY - y0) > 10)) movido = true; }, { passive: true });
-    campo.addEventListener("touchend", e => {
-      const era = x0 !== null && !movido; x0 = y0 = null;
-      if (!era || document.activeElement === campo || !document.body.classList.contains("buscando-arriba")) return;
-      if (e.cancelable) e.preventDefault();
-      try { campo.focus(); } catch (er) {}
-    }, { passive: false });
-  })();
   const esconderPantalla = () => {
     if (document.querySelector(".bienvenida")) return;      // en la principal ya se hace
     if (!document.body.classList.contains("escribiendo")) { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); }
