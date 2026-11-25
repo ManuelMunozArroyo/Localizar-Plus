@@ -44,7 +44,7 @@
 // principal, quieta, y no se puede tocar nada ni se guarda nada en el iPhone.
 // Abierta desde el icono del inicio: la primera vez sale la roja "Falta tu Excel"
 // con las tres casillas desactivadas.
-(function () { const ENTREGA = "2026-11-24-V2-11";
+(function () { const ENTREGA = "2026-11-25-V2-12";
   let instalada = false;
   try { instalada = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches; } catch (e) {}
   window.SOLO_VISTA = !instalada && !window.claude;
@@ -569,6 +569,14 @@ dialog#ajustes[open]::backdrop{animation:aparecerFondo .3s ease-out}
 main.saliendo, #pararVoz.saliendo{opacity:0;transition:opacity .14s ease-in;pointer-events:none}
 #pararVoz{animation:aparecerVentana .22s ease-out}
 main, .abajo{transition:opacity .25s ease-out}
+/* V2-12 (25/11/2026): al tocar "¿Que buscas?" en la pantalla principal, la tarjeta "Hola, Manuel" se desvanece y la barra
+   amarilla con el buscador sube SUAVE hasta donde empezaba la tarjeta, ANTES de que llegue el teclado: asi el teclado ya no
+   la tapa y el iPhone no tiene que empujar la pantalla (antes: la tarjeta desaparecia de golpe, la cabecera se iba y la
+   barra subia de mas y rebotaba). Al cerrar el teclado sin buscar, vuelve todo a su sitio igual de suave. */
+.abajo{transition:opacity .25s ease-out, translate .22s cubic-bezier(.25,.8,.3,1)}
+body.buscando-arriba .abajo{translate:0 var(--subir-barra, 0px)}
+.bienvenida{transition:opacity .22s ease-out}
+body.buscando-arriba .bienvenida{opacity:0;pointer-events:none}
 html.ventana-abierta:not(.en-falta) main, html.ventana-abierta:not(.en-falta) .abajo{opacity:0;transition:opacity .3s ease-out, visibility 0s linear .3s}
 #instrucciones[open]{animation:aparecerVentana .3s ease-out}
 #instrucciones.cerrando{opacity:0;transition:opacity .25s ease-in}
@@ -2767,7 +2775,25 @@ let pasandoPantalla = false, siguientePantalla = null;
 // cierra" al volver desde abajo de una lista larga) y al volver a una lista se ponia un fotograma despues (la lista salia
 // arriba y luego saltaba). Ahora: pantalla nueva -> arriba del todo; volver a una lista -> directamente donde estabas
 // (fijarScroll); si la pantalla no cambia -> se queda donde estaba.
-let scrollFijado = false;
+let scrollFijado = false, pasoY = null;
+// V2-12: subir / bajar la barra del buscador en la pantalla principal (ver el estilo "buscando-arriba")
+function subirBuscadorArriba() {
+  const b = document.body;
+  if (b.classList.contains("buscando-arriba")) return true;
+  if (!b.classList.contains("en-inicio")) return false;
+  const barra = document.querySelector(".abajo"), tarj = document.querySelector(".bienvenida:not(.compacta)");
+  if (!barra || !tarj || !barra.offsetHeight) return false;
+  const rb = barra.getBoundingClientRect(), rt = tarj.getBoundingClientRect();
+  const z = (rb.height / barra.offsetHeight) || 1;
+  const px = Math.round((rb.top - rt.top) / z);
+  if (!(px > 20 && px < innerHeight)) return false;
+  b.style.setProperty("--subir-barra", -px + "px");
+  b.classList.add("buscando-arriba");
+  return true;
+}
+function quitarBuscadorArriba() { document.body.classList.remove("buscando-arriba"); }
+// V2-12: donde estaba la lista que se deja (aunque ya se haya subido arriba para el cambio en dos tiempos)
+function posLista() { return pasoY !== null ? pasoY : scrollY; }
 function fijarScroll(y) { scrollFijado = true; window.scrollTo(0, Math.max(0, y || 0)); }
 function pasarSuave(accion, conVolver, encadenar) {
   if (pasandoPantalla) { if (encadenar) siguientePantalla = accion; return; }
@@ -2776,16 +2802,29 @@ function pasarSuave(accion, conVolver, encadenar) {
   if (!seVe) { accion(); return; }
   pasandoPantalla = true;
   m.classList.add("saliendo"); if (conVolver) v.classList.add("saliendo");
-  setTimeout(() => {
+  // V2-12 (25/11/2026): en el iPhone, si la lista estaba bajada, cambiar de pantalla y subir arriba EN EL MISMO
+  // INSTANTE le obliga a rehacer toda la vista de golpe, y durante un fotograma no pinta nada (se vio en el video del
+  // usuario: un fotograma entero azul oscuro). Por eso, si la lista esta bajada, se hace en DOS TIEMPOS con la pantalla
+  // desvanecida y escondida: primero se sube arriba, se esperan 3 fotogramas para que el iPhone la pinte, y despues se
+  // pone la pantalla nueva (que ya no tiene que mover nada). Si la lista no esta bajada, todo como antes.
+  const seguir = (yAntes) => {
     pasandoPantalla = false;
     const antes = r.firstChild, luego = siguientePantalla; siguientePantalla = null;
-    m.classList.remove("saliendo"); v.classList.remove("saliendo");
-    const yAntes = scrollY; scrollFijado = false;
-    accion();
-    if (luego) luego();
+    m.classList.remove("saliendo"); v.classList.remove("saliendo"); m.style.visibility = "";
+    scrollFijado = false; pasoY = yAntes;
+    try { accion(); if (luego) luego(); } finally { pasoY = null; }
+    if (!document.querySelector(".bienvenida")) quitarBuscadorArriba();   // V2-12: si se busco desde la principal, la barra baja suave a su sitio con la pantalla nueva
     // si no ha cambiado de pantalla, lo que habia vuelve a aparecer suave
     if (antes && r.firstChild === antes) { if (!scrollFijado && scrollY !== yAntes) window.scrollTo(0, yAntes); r.classList.remove("fundido"); void r.offsetWidth; r.classList.add("fundido"); }
     else if (!scrollFijado) window.scrollTo(0, 0);   // V2-11: pantalla nueva, arriba, ya en este instante (siempre: el iPhone puede ir un paso por detras)
+  };
+  setTimeout(() => {
+    const yAntes = scrollY;
+    if (yAntes > 2) {
+      m.style.visibility = "hidden";          // lo viejo ya esta casi transparente: ahora del todo, para que no se vea subir
+      window.scrollTo(0, 0);
+      requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => seguir(yAntes))));
+    } else seguir(yAntes);
   }, 150);
 }
 function tituloSitio(clave) {
@@ -3065,7 +3104,7 @@ function pintarResultado(consulta, res) {
     }
     t.append(el("button", { class: "boton claro", on: () => pasarSuave(() => {
       // "Volver" trae de vuelta estos mismos resultados, en el mismo punto
-      const y = scrollY;
+      const y = posLista();
       ejecutar(ensenarSitio(inv, c));
       volverA = () => { pintarResultado(consulta, res); fijarScroll(y); };   // V2-11: en el mismo instante, no un fotograma despues
       actualizarBotonVolver();
@@ -3094,7 +3133,7 @@ function pintarArmario(a) {
     if (!cl.length) return;
     // Al elegir armario se enseña el cajon; el boton Volver trae de
     // vuelta esta misma pantalla (con la caja incluida).
-    const guardado = { ...a, nombres }, yLista = scrollY;
+    const guardado = { ...a, nombres }, yLista = posLista();
     ejecutar(cl.length === 1 ? ensenarSitio(inv, cl[0]) : ensenarVarios(inv, cl));
     volverA = () => { pintarArmario(guardado); fijarScroll(yLista); };   // V2-11: donde estabas
   }, pistaArmarios(a.zonas) || true, a.nota, false, a.zonas.map(claseZona));
@@ -3138,7 +3177,7 @@ function pintarTodo() {
         const corto = [a ? cuentaTexto(a, "artículo", "artículos") : "Sin artículos todavía", f ? "📷 " + cuentaTexto(f, "foto", "fotos") : ""].filter(Boolean).join("  ·  ");
         s.append(el("span", { class: "resumen-cajon" }, corto));
       }
-      b.append(el("button", { class: "fila" + (conTitulo ? " con-titulo" : ""), on: () => pasarSuave(() => { const y = scrollY; ejecutar(ensenarSitio(inv, c)); volverA = () => { pintarTodo(); fijarScroll(y); }; }) }, s, el("span", { class: "que suave recuento-todo" }, resumen)));
+      b.append(el("button", { class: "fila" + (conTitulo ? " con-titulo" : ""), on: () => pasarSuave(() => { const y = posLista(); ejecutar(ensenarSitio(inv, c)); volverA = () => { pintarTodo(); fijarScroll(y); }; }) }, s, el("span", { class: "que suave recuento-todo" }, resumen)));
     }
     r.append(b);
   }
@@ -3170,7 +3209,7 @@ function ejecutar(acciones) {
     }
     else if (a.tipo === "todo") pintarTodo();
     else if (a.tipo === "elegirArmario") pintarArmario(a); else if (a.tipo === "elegirSitio") {
-      pintarEleccion(a.pregunta, a.opciones, i => { const yLista = scrollY; pend.sitios = []; pend.opciones = []; ejecutar(ensenarSitio(inv, a.claves[i]));
+      pintarEleccion(a.pregunta, a.opciones, i => { const yLista = posLista(); pend.sitios = []; pend.opciones = []; ejecutar(ensenarSitio(inv, a.claves[i]));
         const lista = { ...a }, voz = acciones.find(x => x.tipo === "voz");
         // V2-11: Volver deja la lista (por ejemplo las cajas de una estanteria) donde estabas, como en las demas listas
         volverA = () => { pend.sitios = [...(lista.claves || [])]; pend.opciones = [...(lista.opciones || [])]; ejecutar([lista]); fijarScroll(yLista); }; }, a.pista ? (pistaArmarios(a.opciones) || true) : false, a.nota, false, (a.claves || []).map(claseSitio));
@@ -3386,12 +3425,15 @@ function activarCampoEntrada(campo) {
   // despues, con la pantalla desplazada hacia abajo, el cuadro y el boton
   // amarillo se quedaban escondidos detras del teclado.
   const restaurarInicio = () => {
+    quitarBuscadorArriba();   // V2-12
     document.querySelectorAll(".bienvenida").forEach(b => b.classList.remove("compacta"));
     modoInicio();
   };
   const compactarInicio = () => {
     const inicio = document.querySelectorAll(".bienvenida");
     if (!inicio.length) return false;
+    // V2-12: en la pantalla principal ya no se quita la tarjeta de golpe: se desvanece y la barra sube suave (si se puede medir)
+    if (subirBuscadorArriba()) return true;
     const yaEstaba = [...inicio].every(b => b.classList.contains("compacta"));
     inicio.forEach(b => b.classList.add("compacta"));
     modoInicio();
@@ -3405,6 +3447,19 @@ function activarCampoEntrada(campo) {
   };
   campo.addEventListener("touchstart", alPonerElDedo, { passive: true });
   campo.addEventListener("pointerdown", alPonerElDedo);
+  // V2-12: como el cuadro sube mientras tienes el dedo puesto, al levantarlo puede que ya no este debajo del dedo:
+  // si fue un toque (el dedo casi no se movio) y el cuadro aun no tiene el cursor, se le da aqui (el iPhone abre el teclado).
+  (() => {
+    let x0 = null, y0 = null, movido = false;
+    campo.addEventListener("touchstart", e => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; movido = false; }, { passive: true });
+    campo.addEventListener("touchmove", e => { const t = e.touches[0]; if (x0 !== null && (Math.abs(t.clientX - x0) > 10 || Math.abs(t.clientY - y0) > 10)) movido = true; }, { passive: true });
+    campo.addEventListener("touchend", e => {
+      const era = x0 !== null && !movido; x0 = y0 = null;
+      if (!era || document.activeElement === campo || !document.body.classList.contains("buscando-arriba")) return;
+      if (e.cancelable) e.preventDefault();
+      try { campo.focus(); } catch (er) {}
+    }, { passive: false });
+  })();
   const esconderPantalla = () => {
     if (document.querySelector(".bienvenida")) return;      // en la principal ya se hace
     if (!document.body.classList.contains("escribiendo")) { document.body.classList.add("escribiendo"); window.scrollTo(0, 0); }
